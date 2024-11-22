@@ -1,5 +1,4 @@
 import os
-from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -15,20 +14,11 @@ from .routers import analysis
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup: Load the AI model
-    app.state.ai_model = genai.GenerativeModel('gemini-1.5-flash')
-    yield
-    # Cleanup: Nothing to clean up for now
-
-
-# Initialize FastAPI app with lifespan
+# Initialize FastAPI app
 app = FastAPI(
     title="Third Eye",
     description="A FastAPI application for analyzing grocery products using smartphone camera and Google Generative AI",
     version="1.0.0",
-    lifespan=lifespan
 )
 
 # Configure CORS

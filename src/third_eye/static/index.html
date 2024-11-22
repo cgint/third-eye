@@ -154,12 +154,10 @@
                 const data = await response.json();
                 
                 // Convert markdown to HTML using marked.js
-                const convertedContent = marked.parse(data.additional_info || 'No additional information available');
+                const convertedContent = marked.parse(data.result_text || 'No additional information available');
                 
                 result.innerHTML = `
                     <h3>Analysis Results:</h3>
-                    <p><strong>Fat Content:</strong> ${data.fat_content || 'Not found'}</p>
-                    <p><strong>Gluten Free:</strong> ${data.gluten_free || 'Not found'}</p>
                     <p><strong>Additional Information:</strong></p>
                     <div>${convertedContent}</div>
                 `;

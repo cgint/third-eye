@@ -306,7 +306,7 @@ allow_headers=["*"],  # Allows all headers
 
 # Configure Google Generative AI
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-model = genai.GenerativeModel('gemini-pro-vision')
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 # Serve static files (frontend)
 app.mount("/", StaticFiles(directory="../frontend", html=True), name="static")

@@ -162,7 +162,7 @@ import google.ai.generativelanguage as glm
 
 load_dotenv()
 genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
-model = genai.GenerativeModel('gemini-pro-vision')
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 class ContentDescriber:
     def __init__(self, root, user_input, video_handler):

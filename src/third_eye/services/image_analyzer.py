@@ -1,11 +1,10 @@
 import io
-import re
 from typing import Optional
 
 from PIL import Image
+from pydantic import BaseModel, Field
 import google.generativeai as genai
 import google.ai.generativelanguage as glm
-from pydantic import BaseModel, Field
 
 
 class ProcessedImage(BaseModel):
@@ -14,13 +13,11 @@ class ProcessedImage(BaseModel):
 
 
 class AnalysisResult(BaseModel):
-    fat_content: Optional[str] = Field(None, description="Fat content of the product")
-    gluten_free: Optional[str] = Field(None, description="Whether the product is gluten-free")
-    additional_info: Optional[str] = Field(None, description="Additional nutritional information")
+    result_text: Optional[str] = Field(None, description="Comprehensive nutritional and product analysis results")
 
 
 class ImageAnalyzer:
-    def __init__(self, ai_model: genai.GenerativeModel):
+    def __init__(self, ai_model):
         self.ai_model = ai_model
 
     def process_image(self, image: Image.Image) -> ProcessedImage:
@@ -53,55 +50,28 @@ class ImageAnalyzer:
         """Parse the AI response to extract structured information."""
         try:
             result = AnalysisResult(
-                fat_content=None,
-                gluten_free=None,
-                additional_info=response_text
+                result_text=response_text
             )
-            
-            # Extract fat content
-            text_lower = response_text.lower()
-            if "fat" in text_lower:
-                for line in text_lower.split('\n'):
-                    if "fat" in line:
-                        # Look for patterns like "10g fat" or "fat: 10g" or "10% fat"
-                        fat_matches = re.findall(r'(\d+(?:\.\d+)?(?:g|%)?)\s*(?:of\s*)?fat', line)
-                        if fat_matches:
-                            result.fat_content = fat_matches[0]
-                            break
-            
-            # Determine if gluten-free
-            gluten_indicators = {
-                "gluten-free": True,
-                "no gluten": True,
-                "contains gluten": False,
-                "not gluten-free": False
-            }
-            
-            for indicator, is_gluten_free in gluten_indicators.items():
-                if indicator in text_lower:
-                    result.gluten_free = "Yes" if is_gluten_free else "No"
-                    break
             
             return result
         except Exception as e:
             raise ValueError(f"Error parsing AI response: {str(e)}") from e
 
     def analyze(self, image: Image.Image) -> AnalysisResult:
-        """Analyze a product image using Google's Generative AI."""
+        """Analyze a product image using AI."""
         try:
             processed_image = self.process_image(image)
             
             # Generate prompt for AI
             prompt = """
             Analyze this product image and provide:
-            1. Fat content (if visible)
-            2. Whether it's gluten-free
-            3. Any other relevant nutritional information
+            1. Comprehensive nutritional information
+            2. Any relevant product details
             
             Please be specific and concise in your response.
             """
             
-            # Create Blob for image
+            # Create a proper blob using google.ai.generativelanguage
             blob = glm.Blob(
                 mime_type=processed_image.mime_type,
                 data=processed_image.data
@@ -110,11 +80,19 @@ class ImageAnalyzer:
             # Get AI response
             response = self.ai_model.generate_content([prompt, blob])
             
-            if not response.text:
+            # Ensure response is not a coroutine and has text
+            if hasattr(response, 'text'):
+                response_text = response.text
+            elif hasattr(response, 'result'):
+                response_text = response.result.text
+            else:
                 raise ValueError("Failed to analyze image - no response text")
             
+            if not response_text:
+                raise ValueError("Failed to analyze image - empty response text")
+            
             # Parse and structure the response
-            return self.parse_ai_response(response.text)
+            return self.parse_ai_response(response_text)
             
         except Exception as e:
             raise ValueError(f"Error analyzing image: {str(e)}") from e

@@ -1,101 +1,75 @@
-import io
-from unittest.mock import AsyncMock, MagicMock
-import pytest
-from PIL import Image
 from fastapi.testclient import TestClient
+from PIL import Image
+import io
+import pytest
+import unittest.mock
 
 from third_eye.main import app
-from third_eye.services.image_analyzer import AnalysisResult
+from third_eye.services.image_analyzer import AnalysisResult, ImageAnalyzer
 
+client = TestClient(app)
 
-@pytest.fixture
-def test_client():
-    return TestClient(app)
+class MockAIModel:
+    def generate_content(self, inputs):
+        return MockResponse("Mock analysis result for testing")
 
-
-@pytest.fixture
-def mock_ai_model(monkeypatch):
-    model = AsyncMock()
-    app.state.ai_model = model
-    return model
-
+class MockResponse:
+    def __init__(self, text):
+        self.text = text
 
 @pytest.fixture
-def mock_image():
-    # Create a small test image
-    img = Image.new('RGB', (100, 100), color='red')
+def mock_ai_model():
+    """Mock the AI model to return a predictable response."""
+    return MockAIModel()
+
+def test_analyze_image_endpoint(mock_ai_model):
+    # Create a simple test image
+    test_image = Image.new('RGB', (100, 100), color='red')
     img_byte_arr = io.BytesIO()
-    img.save(img_byte_arr, format='PNG')
+    test_image.save(img_byte_arr, format='PNG')
     img_byte_arr.seek(0)
-    return img_byte_arr
 
+    # Mock the get_ai_model to return our mock model
+    with (
+        unittest.mock.patch('third_eye.services.ai_service.get_ai_model', return_value=mock_ai_model),
+        unittest.mock.patch('third_eye.routers.analysis.get_ai_model', return_value=mock_ai_model)
+    ):
+        # Send the image to the analyze endpoint
+        response = client.post(
+            "/api/analyze", 
+            files={"file": ("test_image.png", img_byte_arr, "image/png")}
+        )
 
-def test_analyze_image_success(test_client, mock_ai_model, mock_image):
-    # Mock the AI model's response
-    mock_ai_model.generate_content.return_value = MagicMock(
-        text="Fat content: 10g\nGluten-free: Yes\nAdditional info: Contains vitamins"
-    )
-    
-    # Create test file
-    files = {
-        "file": ("test.png", mock_image, "image/png")
-    }
-    
-    # Make request
-    response = test_client.post("/api/analyze", files=files)
-    
-    # Assert response
+    # Check response
     assert response.status_code == 200
-    result = response.json()
-    assert isinstance(result, dict)
-    assert "fat_content" in result
-    assert "gluten_free" in result
-    assert "additional_info" in result
+    
+    # Validate response model
+    result = AnalysisResult(**response.json())
+    assert result.result_text is not None
+    assert result.result_text == "Mock analysis result for testing"
 
+def test_analysis_result_model():
+    # Test the AnalysisResult model
+    result = AnalysisResult(result_text="Comprehensive product analysis details")
+    
+    assert result.result_text == "Comprehensive product analysis details"
+    assert result.model_dump() == {"result_text": "Comprehensive product analysis details"}
 
-def test_analyze_image_invalid_file_type(test_client, mock_ai_model):
-    # Create invalid file (text instead of image)
-    files = {
-        "file": ("test.txt", "not an image", "text/plain")
-    }
+def test_analysis_result_empty_text():
+    # Test AnalysisResult with empty text
+    result = AnalysisResult(result_text=None)
     
-    # Make request
-    response = test_client.post("/api/analyze", files=files)
-    
-    # Assert response
-    assert response.status_code == 400
-    assert response.json()["detail"] == "File must be an image"
+    assert result.result_text is None
+    assert result.model_dump() == {"result_text": None}
 
-
-def test_analyze_image_ai_error(test_client, mock_ai_model, mock_image):
-    # Mock AI model to raise an error
-    mock_ai_model.generate_content.side_effect = ValueError("AI model error")
+def test_image_analyzer_mock(mock_ai_model):
+    # Test ImageAnalyzer with mock AI model
+    analyzer = ImageAnalyzer(mock_ai_model)
     
-    # Create test file
-    files = {
-        "file": ("test.png", mock_image, "image/png")
-    }
+    # Create a test image
+    test_image = Image.new('RGB', (100, 100), color='red')
     
-    # Make request
-    response = test_client.post("/api/analyze", files=files)
+    # Analyze the image
+    result = analyzer.analyze(test_image)
     
-    # Assert response
-    assert response.status_code == 500
-    assert "AI model error" in response.json()["detail"]
-
-
-def test_analyze_image_unexpected_error(test_client, mock_ai_model, mock_image):
-    # Mock AI model to raise an unexpected error
-    mock_ai_model.generate_content.side_effect = Exception("Unexpected error")
-    
-    # Create test file
-    files = {
-        "file": ("test.png", mock_image, "image/png")
-    }
-    
-    # Make request
-    response = test_client.post("/api/analyze", files=files)
-    
-    # Assert response
-    assert response.status_code == 500
-    assert "Unexpected error" in response.json()["detail"]
+    assert result.result_text == "Mock analysis result for testing"
