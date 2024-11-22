@@ -29,6 +29,9 @@
             object-fit: cover;
         }
         #canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             display: none;
         }
         button {
@@ -74,9 +77,9 @@
     
     <div class="camera-container">
         <video id="video" autoplay playsinline></video>
+        <canvas id="canvas"></canvas>
     </div>
     
-    <canvas id="canvas"></canvas>
     <div>
         <button id="captureBtn">Take Photo</button>
         <button id="retakeBtn" style="display: none;">Retake Photo</button>
@@ -110,6 +113,8 @@
                     }
                 });
                 video.srcObject = stream;
+                video.style.display = 'block';
+                canvas.style.display = 'none';
             } catch (err) {
                 console.error('Error accessing camera:', err);
                 result.innerHTML = 'Error accessing camera. Please ensure you have granted camera permissions.';
@@ -130,6 +135,7 @@
             
             stopCamera();
             video.style.display = 'none';
+            canvas.style.display = 'block';
             captureBtn.style.display = 'none';
             retakeBtn.style.display = 'inline';
             loading.style.display = 'block';
@@ -170,7 +176,7 @@
         });
 
         retakeBtn.addEventListener('click', () => {
-            video.style.display = 'block';
+            canvas.style.display = 'none';
             captureBtn.style.display = 'inline';
             retakeBtn.style.display = 'none';
             result.innerHTML = '';
