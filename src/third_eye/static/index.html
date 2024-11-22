@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Third Eye - Grocery Helper</title>
+    <!-- Add marked.js for markdown conversion -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .camera-container {
+            margin: 20px auto;
+            position: relative;
+            width: 320px;
+            height: 240px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        #canvas {
+            display: none;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            text-align: left;
+        }
+        .loading {
+            display: none;
+            margin: 20px auto;
+        }
+        .loading:after {
+            content: "Analyzing...";
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: "Analyzing"; }
+            40% { content: "Analyzing."; }
+            60% { content: "Analyzing.."; }
+            80% { content: "Analyzing..."; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Third Eye</h1>
+    <p>Take a photo of a grocery product to analyze its nutritional information</p>
+    
+    <div class="camera-container">
+        <video id="video" autoplay playsinline></video>
+    </div>
+    
+    <canvas id="canvas"></canvas>
+    <div>
+        <button id="captureBtn">Take Photo</button>
+        <button id="retakeBtn" style="display: none;">Retake Photo</button>
+    </div>
+    
+    <div id="loading" class="loading"></div>
+    <div id="result"></div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const captureBtn = document.getElementById('captureBtn');
+        const retakeBtn = document.getElementById('retakeBtn');
+        const result = document.getElementById('result');
+        const loading = document.getElementById('loading');
+        let stream = null;
+
+        // Configure marked to allow HTML in markdown
+        marked.setOptions({
+            sanitize: false,
+            breaks: true
+        });
+
+        async function initCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                });
+                video.srcObject = stream;
+            } catch (err) {
+                console.error('Error accessing camera:', err);
+                result.innerHTML = 'Error accessing camera. Please ensure you have granted camera permissions.';
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+            }
+        }
+
+        captureBtn.addEventListener('click', async () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            stopCamera();
+            video.style.display = 'none';
+            captureBtn.style.display = 'none';
+            retakeBtn.style.display = 'inline';
+            loading.style.display = 'block';
+
+            try {
+                const blob = await new Promise(resolve => {
+                    canvas.toBlob(resolve, 'image/jpeg', 0.8);
+                });
+
+                const formData = new FormData();
+                formData.append('file', blob, 'image.jpg');
+
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Convert markdown to HTML using marked.js
+                const convertedContent = marked.parse(data.additional_info || 'No additional information available');
+                
+                result.innerHTML = `
+                    <h3>Analysis Results:</h3>
+                    <p><strong>Fat Content:</strong> ${data.fat_content || 'Not found'}</p>
+                    <p><strong>Gluten Free:</strong> ${data.gluten_free || 'Not found'}</p>
+                    <p><strong>Additional Information:</strong></p>
+                    <div>${convertedContent}</div>
+                `;
+            } catch (err) {
+                console.error('Error analyzing image:', err);
+                result.innerHTML = 'Error analyzing image. Please try again.';
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+
+        retakeBtn.addEventListener('click', () => {
+            video.style.display = 'block';
+            captureBtn.style.display = 'inline';
+            retakeBtn.style.display = 'none';
+            result.innerHTML = '';
+            initCamera();
+        });
+
+        // Initialize camera on page load
+        initCamera();
+    </script>
+</body>
+</html>

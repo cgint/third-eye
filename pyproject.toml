@@ -1,0 +1,40 @@
+[tool.poetry]
+name = "third-eye"
+version = "0.1.0"
+description = "An application for analyzing grocery products using smartphone camera and Google Generative AI"
+authors = ["CGInt"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "*"
+uvicorn = {extras = ["standard"], version = "*"}
+python-multipart = "*"
+pillow = "*"
+python-dotenv = "*"
+google-generativeai = "*"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "*"
+pytest = "^8.3.3"
+pytest-asyncio = "^0.24.0"
+httpx = "^0.27.2"
+
+[tool.poetry.scripts]
+lint = "scripts.run_ruff:lint"
+lintfix = "scripts.run_ruff:lintfix"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+#[tool.ruff.lint]
+#select = [
+#    "E9",  # Runtime errors
+#    "F",   # Pyflakes
+#    "B",   # Bugbear
+#]
