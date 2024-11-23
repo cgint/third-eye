@@ -97,6 +97,9 @@
         const loading = document.getElementById('loading');
         let stream = null;
 
+        // Initially disable the capture button
+        captureBtn.disabled = true;
+
         // Configure marked to allow HTML in markdown
         marked.setOptions({
             sanitize: false,
@@ -115,9 +118,15 @@
                 video.srcObject = stream;
                 video.style.display = 'block';
                 canvas.style.display = 'none';
+                
+                // Enable the capture button only when video is actually playing
+                video.addEventListener('loadeddata', () => {
+                    captureBtn.disabled = false;
+                });
             } catch (err) {
                 console.error('Error accessing camera:', err);
                 result.innerHTML = 'Error accessing camera. Please ensure you have granted camera permissions.';
+                captureBtn.disabled = true;
             }
         }
 
@@ -176,6 +185,8 @@
         });
 
         retakeBtn.addEventListener('click', () => {
+            // Disable capture button initially
+            captureBtn.disabled = true;
             canvas.style.display = 'none';
             captureBtn.style.display = 'inline';
             retakeBtn.style.display = 'none';
