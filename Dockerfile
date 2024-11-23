@@ -18,14 +18,12 @@ ENV \
   PIP_DEFAULT_TIMEOUT=100 \
   # Poetry's configuration:
   POETRY_NO_INTERACTION=1 \
-  POETRY_VIRTUALENVS_CREATE=true \
-  POETRY_VIRTUALENVS_IN_PROJECT=true \
+  POETRY_VIRTUALENVS_CREATE=false \
   POETRY_CACHE_DIR='/var/cache/pypoetry' \
   POETRY_HOME='/usr/local'
 #  POETRY_VERSION=1.8.4 # if possible i do not want to specify the version
 
 ENV PATH="${POETRY_HOME}/bin:$PATH"
-
 
 # Install poetry
 RUN curl -sSL https://install.python-poetry.org | python3 -
@@ -37,15 +35,20 @@ COPY pyproject.toml poetry.lock ./
 COPY src/ ./src/
 
 # Install dependencies
-RUN /usr/local/bin/poetry install --only=main --no-interaction --no-ansi \
+RUN /usr/local/bin/poetry install --only=main --no-interaction --no-ansi --no-root --no-cache \
  && /usr/local/bin/poetry cache clear pypi --all
 
+# Create non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser && chown -R appuser:appuser /app
+USER appuser
+
 # Set environment variables
-ENV PORT=8000
+ARG PORT
+ENV PORT=${PORT:-8000}
 ENV HOST=0.0.0.0
 
 # Expose port
-EXPOSE 8000
+EXPOSE $PORT
 
 # Run the application
-CMD ["poetry", "run", "uvicorn", "src.third_eye.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD uvicorn src.third_eye.main:app --host 0.0.0.0 --port ${PORT}

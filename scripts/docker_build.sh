@@ -18,3 +18,4 @@ docker build --platform $TARGET_PLATFORM -t $IMAGE_NAME .
 
 echo "Container built successfully!"
 echo "Local image name: $IMAGE_NAME" 
+
