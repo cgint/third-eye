@@ -31,12 +31,12 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 # Copy poetry files
 COPY pyproject.toml poetry.lock ./
 
-# Copy application code
-COPY src/ ./src/
-
 # Install dependencies
 RUN /usr/local/bin/poetry install --only=main --no-interaction --no-ansi --no-root --no-cache \
- && /usr/local/bin/poetry cache clear pypi --all
+&& /usr/local/bin/poetry cache clear pypi --all
+
+# Copy application code
+COPY src/ ./src/
 
 # Create non-root user
 RUN groupadd -r appuser && useradd -r -g appuser appuser && chown -R appuser:appuser /app
