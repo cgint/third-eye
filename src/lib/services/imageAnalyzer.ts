@@ -3,10 +3,11 @@ import type { ProcessedImage, AnalysisResult } from '../models/analysis';
 
 export class ImageAnalyzer {
     constructor(private aiModel: GenerativeModel) {}
-    async processImage(imageBuffer: Buffer): Promise<ProcessedImage> {
+    
+    async processImage(imageData: ArrayBufferLike): Promise<ProcessedImage> {
         return {
             mimeType: 'image/jpeg',
-            data: new Uint8Array(imageBuffer)
+            data: new Uint8Array(imageData)
         };
     }
 
@@ -17,9 +18,9 @@ export class ImageAnalyzer {
         return { result_text: responseText };
     }
 
-    async analyze(imageBuffer: Buffer): Promise<AnalysisResult> {
+    async analyze(imageData: ArrayBufferLike): Promise<AnalysisResult> {
         try {
-            const processedImage = await this.processImage(imageBuffer);
+            const processedImage = await this.processImage(imageData);
             
             const prompt = `
                 Analyze this product image and provide:
@@ -40,7 +41,7 @@ export class ImageAnalyzer {
                 { text: prompt },
                 {
                     inlineData: {
-                        data: Buffer.from(processedImage.data).toString('base64'),
+                        data: btoa(String.fromCharCode(...processedImage.data)),
                         mimeType: processedImage.mimeType
                     }
                 }

@@ -34,7 +34,7 @@ export async function POST({ request }: RequestEvent) {
 
         const buffer = Buffer.from(await file.arrayBuffer());
         try {
-            const result = await imageAnalyzer.analyze(buffer);
+            const result = await imageAnalyzer.analyze(buffer.buffer);
             return json(result);
         } catch (error) {
             return new Response(

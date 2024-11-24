@@ -36,7 +36,7 @@ describe('ImageAnalyzer', () => {
     describe('analyze', () => {
         it('should successfully analyze image', async () => {
             const testImage = await createTestImage();
-            const result = await analyzer.analyze(testImage);
+            const result = await analyzer.analyze(testImage.buffer);
             
             expect(result).toBeDefined();
             expect(result.result_text).toBe("Mock analysis result for testing");
@@ -47,7 +47,7 @@ describe('ImageAnalyzer', () => {
             analyzer = new ImageAnalyzer(mockAiModel as any);
             
             const testImage = await createTestImage();
-            await expect(analyzer.analyze(testImage))
+            await expect(analyzer.analyze(testImage.buffer))
                 .rejects.toThrow('Failed to analyze image - no response text');
         });
 
@@ -57,7 +57,7 @@ describe('ImageAnalyzer', () => {
             analyzer = new ImageAnalyzer(mockAiModel as any);
             
             const testImage = await createTestImage();
-            await expect(analyzer.analyze(testImage))
+            await expect(analyzer.analyze(testImage.buffer))
                 .rejects.toThrow('Error analyzing image');
         });
     });
