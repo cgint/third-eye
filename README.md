@@ -1,94 +1,80 @@
-# Third Eye - AI-Powered Grocery Product Analyzer
+# Third Eye - Grocery Product Analyzer
 
-Third Eye is a web application that helps users analyze grocery products using their smartphone camera and Google's Generative AI technology. By simply taking a photo of a product, users can instantly receive information about its nutritional content, including fat content, gluten-free status, and other relevant details.
+A SvelteKit application that uses your smartphone's camera to analyze grocery products using Google's Generative AI. Take a photo of any grocery product to get detailed nutritional information and product details.
 
 ## Features
 
-- **Real-time Camera Integration**: Uses the device's camera (preferably rear-facing) to capture product images
-- **AI-Powered Analysis**: Leverages Google's Gemini Pro 1.5 AI model to analyze product images
-- **Nutritional Information Extraction**: 
-  - Fat content detection
-  - Gluten-free status identification
-  - Additional nutritional information parsing
-- **Responsive Web Interface**: Works on both desktop and mobile devices
-- **Real-time Results**: Provides instant analysis results after photo capture
+- Real-time camera access using device's camera
+- Image capture and analysis
+- AI-powered product information extraction
+- Responsive design for mobile use
+- Cloudflare Pages deployment support
 
-## Technical Stack
+## Prerequisites
 
-- **Backend**: FastAPI (Python)
-- **Frontend**: HTML, CSS, JavaScript
-- **AI Model**: Google Generative AI (Gemini Pro 1.5)
-- **Image Processing**: PIL (Python Imaging Library)
+- Node.js (LTS version)
+- Google Cloud Platform account with Generative AI API access
+- Cloudflare account (for deployment)
 
 ## Setup
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/third-eye.git
-cd third-eye
-```
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Copy `.env.example` to `.env` and add your Google Generative AI API key:
+   ```bash
+   GEMINI_API_KEY=your_api_key_here
+   ```
+4. For local development:
+   ```bash
+   npm run dev
+   ```
 
-2. Create a `.env` file based on `.env.example` and add your Google Gemini API key:
-```
-GEMINI_API_KEY=your_api_key_here
-```
+## Deployment
 
-3. Install dependencies using Poetry:
-```bash
-poetry install
-```
+1. Install Wrangler CLI:
+   ```bash
+   npm install -g wrangler
+   ```
 
-4. Run the application:
-```bash
-poetry run uvicorn third_eye.main:app --reload
-```
+2. Login to Cloudflare:
+   ```bash
+   wrangler login
+   ```
 
-The application will be available at `http://localhost:8000`
+3. Set up your API key as a secret:
+   ```bash
+   wrangler secret put GEMINI_API_KEY
+   ```
 
-## Usage
-
-1. Open the application in your web browser
-2. Grant camera access when prompted
-3. Point your camera at a grocery product
-4. Click "Take Photo" to capture the image
-5. Wait for the AI analysis results
-6. Review the extracted nutritional information
-7. Use "Retake Photo" if needed to analyze another product
-
-## API Endpoints
-
-- `GET /`: Serves the main application interface
-- `GET /health`: Health check endpoint
-- `POST /api/analyze`: Analyzes product images
-  - Accepts: Multipart form data with an image file
-  - Returns: JSON with fat content, gluten-free status, and additional information
+4. Deploy to Cloudflare Pages:
+   ```bash
+   npm run deploy
+   ```
 
 ## Development
 
-The project structure is organized as follows:
+The application is built with:
+- SvelteKit for the frontend framework
+- TypeScript for type safety
+- Google's Generative AI for image analysis
+- Cloudflare Pages for hosting and serverless functions
+
+### Project Structure
 
 ```
-third-eye/
-├── src/
-│   └── third_eye/
-│       ├── routers/
-│       │   └── analysis.py    # API endpoints for image analysis
-│       ├── static/
-│       │   └── index.html     # Frontend interface
-│       └── main.py            # FastAPI application setup
-├── tests/                     # Test files
-├── poetry.lock               # Poetry dependency lock file
-└── pyproject.toml           # Project configuration
+src/
+├── app.d.ts           # TypeScript declarations
+├── app.html           # HTML template
+└── routes/
+    ├── +page.svelte   # Main page with camera interface
+    └── api/
+        └── analyze/   # Image analysis endpoint
+            └── +server.ts
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
 
 ## License
 
-[Add your license information here]
+MIT

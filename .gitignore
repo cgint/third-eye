@@ -20,6 +20,8 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+.svelte-kit/
+node_modules/
 
 # Virtual Environment
 .env
