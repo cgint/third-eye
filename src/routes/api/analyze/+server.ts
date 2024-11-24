@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { json } from '@sveltejs/kit';
 import type { RequestEvent } from '@sveltejs/kit';
 import { GoogleGenerativeAI, type Part } from '@google/generative-ai';
 import { GEMINI_API_KEY, GEMINI_MODEL_NAME, TALK_PASSWORD } from '$lib/constants';

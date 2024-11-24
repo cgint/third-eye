@@ -7,10 +7,6 @@ declare global {
 		// interface PageData {}
 		// interface Platform {}
 	}
-
-	interface Window {
-		// Add any custom window properties here
-	}
 }
 
 export {};
