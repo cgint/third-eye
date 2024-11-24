@@ -14,9 +14,9 @@ export class MockAIModel {
     }
 }
 
-export async function createTestImage(width: number = 1024, height: number = 1024): Promise<Buffer> {
+export async function createTestImage(width: number = 1024, height: number = 1024): Promise<ArrayBuffer> {
     // Create a valid JPEG image using sharp
-    return await sharp({
+    const buffer = await sharp({
         create: {
             width,
             height,
@@ -26,4 +26,7 @@ export async function createTestImage(width: number = 1024, height: number = 102
     })
     .jpeg()
     .toBuffer();
+
+    // Convert Buffer to Uint8Array and then to ArrayBuffer
+    return new Uint8Array(buffer).buffer;
 }

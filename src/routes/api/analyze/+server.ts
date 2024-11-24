@@ -32,9 +32,10 @@ export async function POST({ request }: RequestEvent) {
             return new Response('API key not configured', { status: 500 });
         }
 
-        const buffer = Buffer.from(await file.arrayBuffer());
+        // Get ArrayBuffer directly from the file
+        const arrayBuffer = await file.arrayBuffer();
         try {
-            const result = await imageAnalyzer.analyze(buffer.buffer);
+            const result = await imageAnalyzer.analyze(arrayBuffer);
             return json(result);
         } catch (error) {
             return new Response(
