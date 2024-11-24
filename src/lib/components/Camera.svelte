@@ -6,6 +6,7 @@
     let canvas: HTMLCanvasElement;
     let captureBtn: HTMLButtonElement;
     let retakeBtn: HTMLButtonElement;
+    let analyzeBtn: HTMLButtonElement;
     let result: HTMLDivElement;
     let loading: HTMLDivElement;
     let stream: MediaStream | null = null;
@@ -34,6 +35,7 @@
             video.srcObject = stream;
             video.style.display = 'block';
             canvas.style.display = 'none';
+            analyzeBtn.style.display = 'none';
             
             // Enable the capture button only when video is actually playing
             video.addEventListener('loadeddata', () => {
@@ -53,18 +55,8 @@
         }
     }
 
-    async function handleCapture() {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d')?.drawImage(video, 0, 0);
-        
-        stopCamera();
-        video.style.display = 'none';
-        canvas.style.display = 'block';
-        captureBtn.style.display = 'none';
-        retakeBtn.style.display = 'inline';
+    async function analyzeImage() {
         loading.style.display = 'block';
-
         try {
             const blob = await new Promise<Blob>((resolve) => {
                 canvas.toBlob((b) => resolve(b!), 'image/jpeg', 0.8);
@@ -105,11 +97,27 @@
         }
     }
 
+    async function handleCapture() {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d')?.drawImage(video, 0, 0);
+        
+        stopCamera();
+        video.style.display = 'none';
+        canvas.style.display = 'block';
+        captureBtn.style.display = 'none';
+        retakeBtn.style.display = 'inline';
+        analyzeBtn.style.display = 'inline';
+
+        await analyzeImage();
+    }
+
     function handleRetake() {
         captureBtn.disabled = true;
         canvas.style.display = 'none';
         captureBtn.style.display = 'inline';
         retakeBtn.style.display = 'none';
+        analyzeBtn.style.display = 'none';
         result.innerHTML = '';
         initCamera();
     }
@@ -118,7 +126,7 @@
 <div class="top_section">
     <h1>Third Eye</h1>
     <p>Take a photo of a grocery product to analyze its nutritional information</p>
-    <div>Please specify a password to access the app:
+    <div class="password-input">Specify the password:
         <input type="password" bind:value={$password} />
     </div>
     <div class="camera-container">
@@ -155,6 +163,14 @@
         >
             Retake Photo
         </button>
+        <button
+            bind:this={analyzeBtn}
+            id="analyzeBtn"
+            on:click={analyzeImage}
+            style="display: none;"
+        >
+            Analyze Again
+        </button>
     </div>
 
     <div bind:this={loading} id="loading" class="loading">Analyzing</div>
@@ -190,6 +206,14 @@
         align-items: center;
         justify-content: center;
         width: 100%;
+    }
+
+    .top_section p {
+        margin: 5px;
+    }
+
+    .password-input input {
+        width: 50px;
     }
 
     .camera-container {
