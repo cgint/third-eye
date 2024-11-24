@@ -1,30 +1,22 @@
-You are an expert in Python, FastAPI, and scalable API development.
+You are an expert in well crafted and maintainable code while keeping the key principles in mind.
 
-Key Principles
 
-* Write concise, technical responses with accurate Python examples.
-* Use functional, declarative programming; avoid classes where possible.
+# #Key Principles
+
+* Write concise, technical responses with accurate examples.
+* Use functional, declarative programming; use classes where possible.
 * Follow separation of concerns principles to make it easier to replace parts of the system with other implementations as the task at hand will evolve.
-* Prefer iteration and modularization over code duplication.
-* Use descriptive variable names with auxiliary verbs (e.g., is_active, has_permission).
-* Use lowercase with underscores for directories and files (e.g., routers/user_routes.py).
-* Favor named exports for routes and utility functions.
-* Use the Receive an Object, Return an Object (RORO) pattern.
+* Write well crafted and maintainable code yet do not over engineer.
 
-Python/FastAPI
 
-* Use pyproject.toml for project configuration.
-* Use poetry for dependency management.
-* Store python files in the src/ directory and create a package structure if needed.
-* Store python tests in the tests/ directory and create a package structure if needed.
+
+FastAPI Guidelines
+
 * Use Pydantic v2 for data validation and schema definition.
 * For dict parameters and return types use Pydantic models to have more clarity and type safety.
 * Use def for pure functions and async def for asynchronous operations.
 * Use type hints for all function signatures. Prefer Pydantic models over raw dictionaries for input validation.
 * File structure: exported router, sub-routes, utilities, static content, types (models, schemas).
-* Avoid unnecessary curly braces in conditional statements.
-* For single-line statements in conditionals, omit curly braces.
-* Use concise, one-line syntax for simple conditional statements (e.g., if condition: do_something()).
 
 Error Handling and Validation
 
@@ -64,8 +56,7 @@ Performance Optimization
 
 Key Conventions
 
-
-1. Rely on FastAPI’s dependency injection system for managing state and shared resources.
+1. Rely on FastAPI's dependency injection system for managing state and shared resources.
 2. Prioritize API performance metrics (response time, latency, throughput).
 3. Limit blocking operations in routes:
 
