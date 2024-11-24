@@ -1,5 +1,7 @@
 # Third Eye - AI-Powered Grocery Product Analyzer
 
+STATUS: This is the python original code. It will be migrated to a SvelteKit application.
+
 Third Eye is a web application that helps users analyze grocery products using their smartphone camera and Google's Generative AI technology. By simply taking a photo of a product, users can instantly receive information about its nutritional content, including fat content, gluten-free status, and other relevant details.
 
 ## Features
