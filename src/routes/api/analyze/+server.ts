@@ -11,6 +11,7 @@ const imageAnalyzer = new ImageAnalyzer(model);
 
 export async function POST({ request }: RequestEvent) {
     try {
+        console.log('Request received');
         const formData = await request.formData();
         const file = formData.get('file');
         const password = formData.get('password');
@@ -20,24 +21,30 @@ export async function POST({ request }: RequestEvent) {
         const expectedPassword = TALK_PASSWORD?.toString().trim();
 
         if (submittedPassword !== expectedPassword) {
+            console.error('Incorrect password');
             await new Promise(resolve => setTimeout(resolve, 1000));
             return new Response('Unauthorized', { status: 401 });
         }
 
         if (!file || !(file instanceof File)) {
+            console.error('No file uploaded');
             return new Response('No file uploaded', { status: 400 });
         }
 
         if (!GEMINI_API_KEY) {
+            console.error('API key not configured');
             return new Response('API key not configured', { status: 500 });
         }
 
         // Get ArrayBuffer directly from the file
         const arrayBuffer = await file.arrayBuffer();
+        console.log('ArrayBuffer obtained');
         try {
             const result = await imageAnalyzer.analyze(arrayBuffer);
+            console.log('Image analyzed');
             return json(result);
         } catch (error) {
+            console.error('Error analyzing image:', error);
             return new Response(
                 error instanceof Error ? error.message : 'Error analyzing image',
                 { status: 500 }
