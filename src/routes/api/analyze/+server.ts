@@ -42,7 +42,7 @@ export async function POST({ request }: RequestEvent) {
             console.log('Image analyzed');
             return json(result);
         } catch (error) {
-            console.error('Error analyzing image:', error);
+            logError('Error analyzing image:', JSON.stringify(error));
             logStackTrace(error as Error);
             return new Response(
                 error instanceof Error ? error.message : 'Error analyzing image',
@@ -50,7 +50,7 @@ export async function POST({ request }: RequestEvent) {
             );
         }
     } catch (err) {
-        console.error('Request processing error:', err);
+        logError('Request processing error:', JSON.stringify(err));
         logStackTrace(err as Error);
         return new Response(
             err instanceof Error ? err.message : 'Internal server error',
@@ -59,10 +59,17 @@ export async function POST({ request }: RequestEvent) {
     }
 }
 
+function logInfo(title: string, message: string) {
+    console.log(title, message.slice(0, 1000));
+}
+
+function logError(title: string, message: string) {
+    console.error(title, message.slice(0, 1000));
+}
+
 function logStackTrace(error: Error) {
     const stackTrace = error.stack || 'No stack trace available';
-
-    console.error('Stack trace:', stackTrace.slice(0, 1000));
+    logError('Stack trace:', stackTrace);
 }
 
 async function readFileAsBase64(file: File): Promise<string> {
