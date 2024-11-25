@@ -11,7 +11,7 @@ export class ImageAnalyzer {
         };
     }
 
-    parseAiResponse(responseText: string | null): AnalysisResult {
+    async parseAiResponse(responseText: string | null): Promise<AnalysisResult> {
         if (!responseText || responseText.trim() === '') {
             throw new Error('Failed to analyze image - no response text');
         }
@@ -51,8 +51,8 @@ export class ImageAnalyzer {
             ];
 
             const result = await this.aiModel.generateContent(parts);
-            const response = await result.response;
-            return this.parseAiResponse(response.text());
+            const response = result.response;
+            return await this.parseAiResponse(response.text());
         } catch (error) {
             if (error instanceof Error && error.message.includes('Failed to analyze image')) {
                 throw error;
