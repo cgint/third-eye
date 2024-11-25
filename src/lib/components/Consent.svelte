@@ -7,7 +7,6 @@
 </script>
 
 <div class="consent-screen">
-    <h1>Third Eye</h1>
     
     <div class="content">
         <h2>Before we begin</h2>
@@ -40,11 +39,6 @@
 </div>
 
 <style>
-    .consent-screen {
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 20px;
-    }
 
     .content {
         text-align: left;

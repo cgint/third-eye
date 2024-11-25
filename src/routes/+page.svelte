@@ -17,7 +17,6 @@
             line-height: 1.6;
         }
 
-
         button {
             background-color: var(--primary-color);
             color: white;
@@ -55,8 +54,24 @@
             color: var(--primary-color);
             letter-spacing: -0.025em;
         }
+
+        .header {
+            align-items: center;
+            position: relative;
+        }
+
+        .header-image {
+            position: absolute;
+            right: 0;
+            margin-right: 12px;
+        }
     </style>
 </svelte:head>
+
+<div class="header">
+    <div class="header-image"><img src="/favicon_dall-e.png" width="100" alt="Third Eye" /></div>
+    <h1>Third Eye</h1>
+</div>
 
 {#if $cameraConsent}
     <Camera />
