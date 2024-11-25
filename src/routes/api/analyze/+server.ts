@@ -3,6 +3,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GEMINI_API_KEY, GEMINI_MODEL_NAME, TALK_PASSWORD } from '$lib/constants';
 import { ImageAnalyzer } from '$lib/services/imageAnalyzer';
+import type { ProcessedImage } from '$lib/models/analysis';
 
 // Initialize the Google Generative AI client
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY || '');
@@ -13,8 +14,9 @@ export async function POST({ request }: RequestEvent) {
     try {
         console.log('Request received');
         const formData = await request.formData();
-        const file = formData.get('file');
-        const password = formData.get('password');
+        const file = formData.get('file') as File;
+        const password = formData.get('password') as string;
+        const mimeType = formData.get('mimeType') as string;
 
         // Trim passwords to handle any whitespace issues
         const submittedPassword = password?.toString().trim();
@@ -38,7 +40,7 @@ export async function POST({ request }: RequestEvent) {
 
         try {
             console.log('About to analyze image');
-            const result = await imageAnalyzer.analyze(getStringFromFile(file));
+            const result = await imageAnalyzer.analyze(getStringFromFile(file, mimeType));
             console.log('Image analyzed');
             return json(result);
         } catch (error) {
@@ -68,31 +70,12 @@ function logStackTrace(error: Error) {
     logError('Stack trace:', stackTrace);
 }
 
-async function getStringFromFile(file: File): Promise<string> {
+async function getStringFromFile(file: File, mimeType: string): Promise<ProcessedImage> {
     const buf: ArrayBuffer = await file.arrayBuffer();
+    console.log('getStringFromFile - buf-size', buf.byteLength);
     const array = new Uint8Array(buf);
-    return btoa(String.fromCharCode(...array));
-}
-
-async function readFileAsBase64(file: File): Promise<string> {
-    // Use a stream reader to process the file in chunks
-    // We can not use Buffer on Cloudflare
-    // Memory efficiency
-    let result = '';
-    const reader = file.stream().getReader();
-    
-    try {
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            
-            // Convert chunk to base64 directly
-            const chunk = new Uint8Array(value);
-            const binary = String.fromCharCode(...chunk);
-            result += btoa(binary);
-        }
-        return result;
-    } finally {
-        reader.releaseLock();
-    }
+    return {
+        mimeType: mimeType,
+        data: btoa(String.fromCharCode(...array))
+    };
 }

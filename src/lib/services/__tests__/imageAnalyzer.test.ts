@@ -1,6 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ImageAnalyzer } from '../imageAnalyzer';
 import { MockAIModel, createTestImage } from './test-helpers';
+import type { ProcessedImage } from '$lib/models/analysis';
+
+function createTestProcessedImage(testImage: ArrayBuffer): ProcessedImage {
+    return {
+        data: Buffer.from(testImage).toString('base64'),
+        mimeType: 'image/jpeg'
+    };
+}
 
 describe('ImageAnalyzer', () => {
     let mockAiModel: MockAIModel;
@@ -39,7 +47,7 @@ describe('ImageAnalyzer', () => {
             analyzer = new ImageAnalyzer(mockAiModel as any);
             const testImage = await createTestImage();
             const result = await analyzer.analyze(
-                Promise.resolve(Buffer.from(testImage).toString('base64'))
+                Promise.resolve(createTestProcessedImage(testImage))
             );
             expect(result.result_text).toBe('Mock analysis result for testing');
         });
@@ -49,7 +57,7 @@ describe('ImageAnalyzer', () => {
             analyzer = new ImageAnalyzer(mockAiModel as any);
             const testImage = await createTestImage();
             await expect(analyzer.analyze(
-                Promise.resolve(Buffer.from(testImage).toString('base64'))
+                Promise.resolve(createTestProcessedImage(testImage))
             ))
                 .rejects.toThrow('Failed to analyze image - no response text');
         });
@@ -62,7 +70,7 @@ describe('ImageAnalyzer', () => {
             analyzer = new ImageAnalyzer(mockAiModel as any);
             const testImage = await createTestImage();
             await expect(analyzer.analyze(
-                Promise.resolve(Buffer.from(testImage).toString('base64'))
+                Promise.resolve(createTestProcessedImage(testImage))
             ))
                 .rejects.toThrow('Error analyzing image');
         });

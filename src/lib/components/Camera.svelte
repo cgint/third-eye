@@ -13,6 +13,11 @@
     let loading: HTMLDivElement;
     let stream: MediaStream | null = null;
 
+    const mimeType = 'image/webp';
+    const extension = 'webp';
+    const imageWidth = 2048;
+    const imageHeight = 2048;
+
     // Configure marked to allow HTML in markdown
     marked.setOptions({
         breaks: true
@@ -34,8 +39,8 @@
             stream = await navigator.mediaDevices.getUserMedia({
                 video: {
                     facingMode: 'environment',
-                    width: { ideal: 512 },
-                    height: { ideal: 512 }
+                    width: { ideal: imageWidth },
+                    height: { ideal: imageHeight }
                 }
             });
             video.srcObject = stream;
@@ -65,11 +70,12 @@
         loading.style.display = 'block';
         try {
             const blob = await new Promise<Blob>((resolve) => {
-                canvas.toBlob((b) => resolve(b!), 'image/jpeg', 0.8);
+                canvas.toBlob((b) => resolve(b!), mimeType, 0.8);
             });
 
             const formData = new FormData();
-            formData.append('file', blob, 'image.jpg');
+            formData.append('mimeType', mimeType);
+            formData.append('file', blob, `image.${extension}`);
             formData.append('password', $password);
 
             const response = await fetch('/api/analyze', {

@@ -45,6 +45,7 @@ describe('POST /api/analyze', () => {
         
         mockFormData = new FormData();
         mockFormData.append('file', imageFile);
+        mockFormData.append('mimeType', 'image/jpeg');
         mockFormData.append('password', TALK_PASSWORD || '');
         
         mockRequest = new Request('http://localhost/api/analyze', {
