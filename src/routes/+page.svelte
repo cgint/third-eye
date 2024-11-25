@@ -58,18 +58,30 @@
         .header {
             align-items: center;
             position: relative;
+            background-color: rgba(200, 200, 200, 0.5);
+            border-radius: 15px;
+            height: 64px;
         }
 
-        .header-image {
+        .header-image-left {
+            position: absolute;
+            left: 0;
+        }
+
+        .header-image-right {
             position: absolute;
             right: 0;
-            margin-right: 12px;
+        }
+        .header-image img {
+            border-radius: 12px;
+            height: 64px;
         }
     </style>
 </svelte:head>
 
 <div class="header">
-    <div class="header-image"><img src="/favicon_dall-e.png" width="100" alt="Third Eye" /></div>
+    <div class="header-image header-image-left"><img src="/favicon_dall-e.png" alt="Third Eye" /></div>
+    <div class="header-image header-image-right"><img src="/favicon_dall-e.png" alt="Third Eye" /></div>
     <h1>Third Eye</h1>
 </div>
 
