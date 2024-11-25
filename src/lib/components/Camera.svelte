@@ -3,6 +3,7 @@
     import { marked } from 'marked';
     import { password } from '$lib/stores/passwordStore';
     import { cameraConsent } from '$lib/stores/consentStore';
+    import { IMAGE_MIME_TYPE, IMAGE_EXTENSION, IMAGE_QUALITY, IMAGE_WIDTH, IMAGE_HEIGHT } from '$lib/constants';
 
     let video: HTMLVideoElement;
     let canvas: HTMLCanvasElement;
@@ -12,11 +13,6 @@
     let result: HTMLDivElement;
     let loading: HTMLDivElement;
     let stream: MediaStream | null = null;
-
-    const mimeType = 'image/webp';
-    const extension = 'webp';
-    const imageWidth = 1024;
-    const imageHeight = 1024;
 
     // Configure marked to allow HTML in markdown
     marked.setOptions({
@@ -39,8 +35,8 @@
             stream = await navigator.mediaDevices.getUserMedia({
                 video: {
                     facingMode: 'environment',
-                    width: { ideal: imageWidth },
-                    height: { ideal: imageHeight }
+                    width: { ideal: IMAGE_WIDTH },
+                    height: { ideal: IMAGE_HEIGHT }
                 }
             });
             video.srcObject = stream;
@@ -70,12 +66,12 @@
         loading.style.display = 'block';
         try {
             const blob = await new Promise<Blob>((resolve) => {
-                canvas.toBlob((b) => resolve(b!), mimeType, 0.8);
+                canvas.toBlob((b) => resolve(b!), IMAGE_MIME_TYPE, IMAGE_QUALITY);
             });
 
             const formData = new FormData();
-            formData.append('mimeType', mimeType);
-            formData.append('file', blob, `image.${extension}`);
+            formData.append('mimeType', IMAGE_MIME_TYPE);
+            formData.append('file', blob, `image.${IMAGE_EXTENSION}`);
             formData.append('password', $password);
 
             const response = await fetch('/api/analyze', {
