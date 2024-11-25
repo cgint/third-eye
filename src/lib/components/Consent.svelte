@@ -7,7 +7,7 @@
 </script>
 
 <div class="consent-screen">
-    <h1>Welcome to Third Eye</h1>
+    <h1>Third Eye</h1>
     
     <div class="content">
         <h2>Before we begin</h2>
