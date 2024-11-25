@@ -2,6 +2,8 @@
     import { onMount } from 'svelte';
     import { marked } from 'marked';
     import { password } from '$lib/stores/passwordStore';
+    import { cameraConsent } from '$lib/stores/consentStore';
+
     let video: HTMLVideoElement;
     let canvas: HTMLCanvasElement;
     let captureBtn: HTMLButtonElement;
@@ -22,6 +24,10 @@
             stopCamera();
         };
     });
+
+    function revokeConsent() {
+        $cameraConsent = false;
+    }
 
     async function initCamera() {
         try {
@@ -126,8 +132,9 @@
 <div class="top_section">
     <h1>Third Eye</h1>
     <p>Take a photo of a grocery product to analyze its nutritional information</p>
-    <div class="password-input">Specify the password:
+    <div class="password-input">Password:
         <input type="password" bind:value={$password} />
+        <button on:click={revokeConsent} title="Revoke camera access consent" style="width: 24px; height: 24px; padding: 0; font-size: 12px;">&#x26A0;</button>
     </div>
     <div class="camera-container">
         <video 
@@ -186,14 +193,6 @@
         --border-color: #E2E8F0;
     }
 
-
-    h1 {
-        font-size: 2.5rem;
-        margin-bottom: 0.75rem;
-        color: var(--primary-color);
-        letter-spacing: -0.025em;
-    }
-
     p {
         color: #64748B;
         margin-bottom: 2.5rem;
@@ -247,37 +246,6 @@
         height: 100%;
         object-fit: cover;
         display: none;
-    }
-
-    button {
-        background-color: var(--primary-color);
-        color: white;
-        border: none;
-        padding: 14px 28px;
-        border-radius: 12px;
-        cursor: pointer;
-        margin: 12px;
-        font-size: 1rem;
-        font-weight: 600;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-        letter-spacing: 0.025em;
-    }
-
-    button:hover:not(:disabled) {
-        background-color: var(--primary-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
-    }
-
-    button:active:not(:disabled) {
-        transform: translateY(0);
-    }
-
-    button:disabled {
-        background-color: #CBD5E1;
-        cursor: not-allowed;
-        box-shadow: none;
     }
 
     #result {
