@@ -38,7 +38,7 @@ export async function POST({ request }: RequestEvent) {
 
         try {
             console.log('About to analyze image');
-            const result = await imageAnalyzer.analyze(readFileAsBase64(file));
+            const result = await imageAnalyzer.analyze(getStringFromFile(file));
             console.log('Image analyzed');
             return json(result);
         } catch (error) {
@@ -70,6 +70,10 @@ function logError(title: string, message: string) {
 function logStackTrace(error: Error) {
     const stackTrace = error.stack || 'No stack trace available';
     logError('Stack trace:', stackTrace);
+}
+
+async function getStringFromFile(file: File): Promise<string> {
+    return file.arrayBuffer().then(buffer => Buffer.from(buffer).toString('base64'));
 }
 
 async function readFileAsBase64(file: File): Promise<string> {
