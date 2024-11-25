@@ -36,11 +36,9 @@ export async function POST({ request }: RequestEvent) {
             return new Response('API key not configured', { status: 500 });
         }
 
-        // Get ArrayBuffer directly from the file
-        const arrayBuffer = await file.arrayBuffer();
-        console.log('ArrayBuffer obtained');
         try {
-            const result = await imageAnalyzer.analyze(arrayBuffer);
+            console.log('About to analyze image');
+            const result = await imageAnalyzer.analyze(readFileAsBase64(file));
             console.log('Image analyzed');
             return json(result);
         } catch (error) {
@@ -61,4 +59,10 @@ export async function POST({ request }: RequestEvent) {
             { status: 500 }
         );
     }
+}
+
+async function readFileAsBase64(file: File): Promise<string> {
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    return buffer.toString('base64');
 }

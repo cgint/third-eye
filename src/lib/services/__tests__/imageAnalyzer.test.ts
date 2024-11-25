@@ -12,24 +12,24 @@ describe('ImageAnalyzer', () => {
     });
 
     describe('AnalysisResult', () => {
-        it('should parse valid AI response', () => {
-            const result = analyzer.parseAiResponse("Test result");
+        it('should parse valid AI response', async () => {
+            const result = await analyzer.parseAiResponse("Test result");
             expect(result).toEqual({ result_text: "Test result" });
         });
 
-        it('should handle null response', () => {
-            expect(() => analyzer.parseAiResponse(null))
-                .toThrow('Failed to analyze image - no response text');
+        it('should handle null response', async () => {
+            await expect(analyzer.parseAiResponse(null))
+                .rejects.toThrow('Failed to analyze image - no response text');
         });
 
-        it('should handle empty response', () => {
-            expect(() => analyzer.parseAiResponse(""))
-                .toThrow('Failed to analyze image - no response text');
+        it('should handle empty response', async () => {
+            await expect(analyzer.parseAiResponse(""))
+                .rejects.toThrow('Failed to analyze image - no response text');
         });
 
-        it('should handle whitespace-only response', () => {
-            expect(() => analyzer.parseAiResponse("   "))
-                .toThrow('Failed to analyze image - no response text');
+        it('should handle whitespace-only response', async () => {
+            await expect(analyzer.parseAiResponse("   "))
+                .rejects.toThrow('Failed to analyze image - no response text');
         });
     });
 
@@ -38,7 +38,9 @@ describe('ImageAnalyzer', () => {
             mockAiModel = new MockAIModel('Mock analysis result for testing');
             analyzer = new ImageAnalyzer(mockAiModel as any);
             const testImage = await createTestImage();
-            const result = await analyzer.analyze(testImage);
+            const result = await analyzer.analyze(
+                Promise.resolve(Buffer.from(testImage).toString('base64'))
+            );
             expect(result.result_text).toBe('Mock analysis result for testing');
         });
 
@@ -46,7 +48,9 @@ describe('ImageAnalyzer', () => {
             mockAiModel = new MockAIModel('');  // Empty response
             analyzer = new ImageAnalyzer(mockAiModel as any);
             const testImage = await createTestImage();
-            await expect(analyzer.analyze(testImage))
+            await expect(analyzer.analyze(
+                Promise.resolve(Buffer.from(testImage).toString('base64'))
+            ))
                 .rejects.toThrow('Failed to analyze image - no response text');
         });
 
@@ -57,7 +61,9 @@ describe('ImageAnalyzer', () => {
             };
             analyzer = new ImageAnalyzer(mockAiModel as any);
             const testImage = await createTestImage();
-            await expect(analyzer.analyze(testImage))
+            await expect(analyzer.analyze(
+                Promise.resolve(Buffer.from(testImage).toString('base64'))
+            ))
                 .rejects.toThrow('Error analyzing image');
         });
     });

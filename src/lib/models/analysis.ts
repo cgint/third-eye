@@ -1,6 +1,6 @@
 export interface ProcessedImage {
     mimeType: string;
-    data: Uint8Array;
+    data: string;
 }
 
 export interface AnalysisResult {
