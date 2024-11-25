@@ -11,9 +11,9 @@ export class ImageAnalyzer {
         return { result_text: responseText };
     }
 
-    async analyze(imageDataBase64: Promise<ProcessedImage>): Promise<AnalysisResult> {
+    async analyze(imageDataBase64: Promise<ProcessedImage>, language: string): Promise<AnalysisResult> {
         try {
-            
+            const languagePrompt = language === 'de' ? 'German' : 'English';
             const prompt = `
             Analyze this product image and provide:
             1. First an most important: Information regarding allergens and ingredients that could cause allergic reactions
@@ -29,7 +29,7 @@ export class ImageAnalyzer {
             Please be specific and concise in your response.
             People should get a good idea of what the product is about and if it might be suitable for them.
             
-            It is of highes importance for the user that you use the following language for your answer: German
+            It is of highes importance for the user that you use the following language for your answer: ${languagePrompt}
             `;
             
             const processedImage = await imageDataBase64;

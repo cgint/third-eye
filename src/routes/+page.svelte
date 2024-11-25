@@ -11,10 +11,10 @@
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 14px 28px;
+            padding: 7px 14px;
             border-radius: 12px;
             cursor: pointer;
-            margin: 12px;
+            margin: 6px;
             font-size: 1rem;
             font-weight: 600;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
