@@ -25,7 +25,8 @@ export class ImageAnalyzer {
             2. Information regarding the product's nutritional value, including calories, protein, carbohydrates, and fat
             2. Any relevant product details
             
-            Start with a very short and easy to grasp table if the items above with yes, no, unknown.
+            Start with a very short and easy to grasp table with two columns where the first names the allergen or ingredient
+            and the second column contains very short information if the product contains the allergen or ingredient.
             Please be specific and concise in your response.
             People should get a good idea of what the product is about and if it might be suitable for them.
             
