@@ -62,7 +62,24 @@ export async function POST({ request }: RequestEvent) {
 }
 
 async function readFileAsBase64(file: File): Promise<string> {
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    return buffer.toString('base64');
+    // Use a stream reader to process the file in chunks
+    // We can not use Buffer on Cloudflare
+    // Memory efficiency
+    let result = '';
+    const reader = file.stream().getReader();
+    
+    try {
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            // Convert chunk to base64 directly
+            const chunk = new Uint8Array(value);
+            const binary = String.fromCharCode(...chunk);
+            result += btoa(binary);
+        }
+        return result;
+    } finally {
+        reader.releaseLock();
+    }
 }
