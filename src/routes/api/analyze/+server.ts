@@ -59,10 +59,6 @@ export async function POST({ request }: RequestEvent) {
     }
 }
 
-function logInfo(title: string, message: string) {
-    console.log(title, message.slice(0, 1000));
-}
-
 function logError(title: string, message: string) {
     console.error(title, message.slice(0, 1000));
 }
@@ -73,7 +69,9 @@ function logStackTrace(error: Error) {
 }
 
 async function getStringFromFile(file: File): Promise<string> {
-    return file.arrayBuffer().then(buffer => Buffer.from(buffer).toString('base64'));
+    const buf: ArrayBuffer = await file.arrayBuffer();
+    const array = new Uint8Array(buf);
+    return btoa(String.fromCharCode(...array));
 }
 
 async function readFileAsBase64(file: File): Promise<string> {
