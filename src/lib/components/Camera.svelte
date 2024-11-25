@@ -15,8 +15,8 @@
 
     const mimeType = 'image/webp';
     const extension = 'webp';
-    const imageWidth = 2048;
-    const imageHeight = 2048;
+    const imageWidth = 1024;
+    const imageHeight = 1024;
 
     // Configure marked to allow HTML in markdown
     marked.setOptions({
@@ -136,7 +136,6 @@
 </script>
 
 <div class="top_section">
-    <h1>Third Eye</h1>
     <p>Take a photo of a grocery product to analyze its nutritional information</p>
     <div class="password-input">Password:
         <input type="password" bind:value={$password} />
