@@ -34,8 +34,8 @@
             stream = await navigator.mediaDevices.getUserMedia({
                 video: {
                     facingMode: 'environment',
-                    width: { ideal: 1024 },
-                    height: { ideal: 1024 }
+                    width: { ideal: 512 },
+                    height: { ideal: 512 }
                 }
             });
             video.srcObject = stream;
