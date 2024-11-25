@@ -43,8 +43,7 @@ export async function POST({ request }: RequestEvent) {
             return json(result);
         } catch (error) {
             console.error('Error analyzing image:', error);
-            const stackTrace = error instanceof Error ? error.stack : 'No stack trace available';
-            console.error('Stack trace:', stackTrace);
+            logStackTrace(error as Error);
             return new Response(
                 error instanceof Error ? error.message : 'Error analyzing image',
                 { status: 500 }
@@ -52,13 +51,17 @@ export async function POST({ request }: RequestEvent) {
         }
     } catch (err) {
         console.error('Request processing error:', err);
-        const stackTrace = err instanceof Error ? err.stack : 'No stack trace available';
-        console.error('Stack trace:', stackTrace);
+        logStackTrace(err as Error);
         return new Response(
             err instanceof Error ? err.message : 'Internal server error',
             { status: 500 }
         );
     }
+}
+
+function logStackTrace(error: Error) {
+    const stackTrace = error instanceof Error ? error.stack : 'No stack trace available';
+    console.error('Stack trace:', stackTrace);
 }
 
 async function readFileAsBase64(file: File): Promise<string> {
