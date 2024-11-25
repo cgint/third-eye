@@ -60,8 +60,9 @@ export async function POST({ request }: RequestEvent) {
 }
 
 function logStackTrace(error: Error) {
-    const stackTrace = error instanceof Error ? error.stack : 'No stack trace available';
-    console.error('Stack trace:', stackTrace);
+    const stackTrace = error.stack || 'No stack trace available';
+
+    console.error('Stack trace:', stackTrace.slice(0, 1000));
 }
 
 async function readFileAsBase64(file: File): Promise<string> {
