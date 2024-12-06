@@ -9,7 +9,7 @@
 <div class="consent-screen">
     
     <div class="content">
-        <h2>Before we begin</h2>
+        <h2>Before we beginnen tunn</h2>
         <p>
             This application uses your device's camera to provide image analysis for your daily needs.
             Therefore you will be asked to grant access to the camera.
