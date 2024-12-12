@@ -30,7 +30,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@google/generative-ai": "^0.21.0",
+		"@google/generative-ai": "0.*",
 		"feed": "^4.2.2",
 		"marked": "^14.1.2"
 	}
