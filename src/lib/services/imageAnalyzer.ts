@@ -32,7 +32,7 @@ export class ImageAnalyzer {
             
             If appropriate also help with clarifying if the product name is in a differnt language or it might be unclear what the main ingredient is.
 
-            In case there is no product on the picture, then describe what you can identify on the picture and what might be of specific interest to the user.
+            In case there is no product on the picture, then omit the nutritional information and only describe what you can identify on the picture and what might be of specific interest to the user.
             
             It is of highes importance for the user that you use the following language for your answer: ${languagePrompt}
             `;
