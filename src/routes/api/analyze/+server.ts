@@ -19,8 +19,6 @@ export async function POST({ request }: RequestEvent) {
         const password = formData.get('password') as string;
         const language = formData.get('language') as string || 'de';
 
-        throw new Error('Test error');
-
         // Trim passwords to handle any whitespace issues
         const submittedPassword = password?.toString().trim();
         const expectedPassword = TALK_PASSWORD?.toString().trim();
