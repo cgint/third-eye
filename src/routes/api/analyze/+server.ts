@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestEvent } from '@sveltejs/kit';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { GEMINI_API_KEY, GEMINI_MODEL_NAME, TALK_PASSWORD } from '$lib/constants';
+import { GEMINI_API_KEY, GEMINI_MODEL_NAME, TALK_PASSWORD, remote_logger } from '$lib/constants';
 import { ImageAnalyzer } from '$lib/services/imageAnalyzer';
 import type { ProcessedImage } from '$lib/models/analysis';
 
@@ -18,6 +18,8 @@ export async function POST({ request }: RequestEvent) {
         const mimeType = formData.get('mimeType') as string;
         const password = formData.get('password') as string;
         const language = formData.get('language') as string || 'de';
+
+        throw new Error('Test error');
 
         // Trim passwords to handle any whitespace issues
         const submittedPassword = password?.toString().trim();
@@ -63,12 +65,16 @@ export async function POST({ request }: RequestEvent) {
 }
 
 function logError(title: string, message: string) {
-    console.error(title, message.slice(0, 1000));
+    const logMessage = message.slice(0, 1000);
+    console.error(title, logMessage);
+    remote_logger.log('error', logMessage);
 }
 
 function logStackTrace(error: Error) {
     const stackTrace = error.stack || 'No stack trace available';
-    logError('Stack trace:', stackTrace);
+    const logMessage = 'Stack trace: ' + stackTrace;
+    console.error(logMessage);
+    remote_logger.log('error', logMessage);
 }
 
 async function getStringFromFile(file: File, mimeType: string): Promise<ProcessedImage> {
