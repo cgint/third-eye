@@ -79,36 +79,12 @@ src/
 
 MIT
 
-
-
 # Appendix
 
-## Newer versions
+## Secrets
 
 ```
-"svelte": "^4.2.12",
-"vite": "^5.0.0",
-"axios": "^0.28.0",
-"@sveltejs/vite-plugin-svelte": "^3.0.2",
-"rollup": "",
-"wrangler": "^3.34.2",
-"bootstrap": "^5.3.3",
-"npm-watch": "^0.11.0",
-"svelte-check": "^3.6.8"
+npx wrangler pages secret put VITE_TALK_PASSWORD
+npx wrangler pages secret put VITE_REMOTE_LOGGER_PASSWORD
+npx wrangler pages secret put VITE_GEMINI_API_KEY  
 ```
-
-
-
-
-```
-"svelte": "^4.2.12",
-"vite": "^5.0.0",
-"axios": "^0.28.0",
-"@sveltejs/vite-plugin-svelte": "^3.0.2",
-"rollup": "",
-"wrangler": "^3.34.2",
-"bootstrap": "^5.3.3",
-"npm-watch": "^0.11.0",
-"svelte-check": "^3.6.8"
-```
-
