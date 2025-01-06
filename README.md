@@ -83,6 +83,8 @@ MIT
 
 ## Secrets
 
+https://developers.cloudflare.com/workers/configuration/secrets/
+
 ```
 npx wrangler pages secret put VITE_TALK_PASSWORD
 npx wrangler pages secret put VITE_REMOTE_LOGGER_PASSWORD
