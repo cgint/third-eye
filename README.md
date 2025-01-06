@@ -78,3 +78,37 @@ src/
 ## License
 
 MIT
+
+
+
+# Appendix
+
+## Newer versions
+
+```
+"svelte": "^4.2.12",
+"vite": "^5.0.0",
+"axios": "^0.28.0",
+"@sveltejs/vite-plugin-svelte": "^3.0.2",
+"rollup": "",
+"wrangler": "^3.34.2",
+"bootstrap": "^5.3.3",
+"npm-watch": "^0.11.0",
+"svelte-check": "^3.6.8"
+```
+
+
+
+
+```
+"svelte": "^4.2.12",
+"vite": "^5.0.0",
+"axios": "^0.28.0",
+"@sveltejs/vite-plugin-svelte": "^3.0.2",
+"rollup": "",
+"wrangler": "^3.34.2",
+"bootstrap": "^5.3.3",
+"npm-watch": "^0.11.0",
+"svelte-check": "^3.6.8"
+```
+
