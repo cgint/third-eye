@@ -69,6 +69,7 @@
             const blob = await new Promise<Blob>((resolve) => {
                 canvas.toBlob((b) => resolve(b!), IMAGE_MIME_TYPE, IMAGE_QUALITY);
             });
+            console.log('blob size', blob.size);
 
             const formData = new FormData();
             formData.append('mimeType', IMAGE_MIME_TYPE);

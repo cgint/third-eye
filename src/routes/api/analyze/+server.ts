@@ -79,8 +79,10 @@ async function getStringFromFile(file: File, mimeType: string): Promise<Processe
     const buf: ArrayBuffer = await file.arrayBuffer();
     console.log('getStringFromFile - buf-size', buf.byteLength);
     const array = new Uint8Array(buf);
+    const array_base64 = btoa(String.fromCharCode(...array))
+    console.log('getStringFromFile - array_base64-size', array_base64.length);
     return {
         mimeType: mimeType,
-        data: btoa(String.fromCharCode(...array))
+        data: array_base64
     };
 }
