@@ -26,8 +26,8 @@
 		"vitest": "2.*",
 		"wrangler": "3.*",
 
-		"@types/sharp": "*",
-		"sharp": "*"
+		"@types/sharp": "0.*",
+		"sharp": "0.*"
 	},
 	"type": "module",
 	"dependencies": {
