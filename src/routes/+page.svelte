@@ -71,7 +71,7 @@
         }
 
         .scenario-selection {
-            margin-bottom: 1rem;
+            margin-bottom: 0;
             display: flex;
             gap: 1rem;
             justify-content: center;

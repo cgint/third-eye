@@ -141,7 +141,8 @@
         initCamera();
     }
 </script>
-<div class="top_section">
+<div class="top-section">
+    <p>Take a photo for {scenarioName}</p>
     <div class="password-input">
         Password: <input type="password" bind:value={$password} />
         <button on:click={revokeConsent} title="Revoke camera access consent" style="width: 24px; height: 24px; padding: 0; font-size: 12px;">&#x26A0;</button>
@@ -166,7 +167,7 @@
             aria-label="Captured photo"
         ></canvas>
     </div>
-    
+
     {#if isCustomScenario}
         <div class="custom-instructions">
             <strong>Custom Instructions</strong>
@@ -225,7 +226,7 @@
         font-size: 1.125rem;
     }
 
-    .top_section {
+    .top-section {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -233,8 +234,8 @@
         width: 100%;
     }
 
-    .top_section p {
-        margin: 5px;
+    .top-section p {
+        margin: 0px;
     }
 
     .password-input input {
