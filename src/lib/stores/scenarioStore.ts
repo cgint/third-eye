@@ -31,7 +31,7 @@ People should get a good idea of what the product is about and if it might be su
     {
         id: 'not-food-product',
         name: 'General Object Analysis',
-        instructions: 'In case there is no product on the picture, then omit the nutritional information and only describe what you can identify on the picture and what might be of specific interest to the user.',
+        instructions: `Describe what you can identify on the picture and what might be of specific interest to the user.`,
         isEditable: false
     }
 ];
