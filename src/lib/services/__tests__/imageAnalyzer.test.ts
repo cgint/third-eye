@@ -48,7 +48,8 @@ describe('ImageAnalyzer', () => {
             const testImage = await createTestImage();
             const result = await analyzer.analyze(
                 Promise.resolve(createTestProcessedImage(testImage)),
-                'en'
+                'en',
+                'Test instructions'
             );
             expect(result.result_text).toBe('Mock analysis result for testing');
         });
@@ -59,7 +60,8 @@ describe('ImageAnalyzer', () => {
             const testImage = await createTestImage();
             await expect(analyzer.analyze(
                 Promise.resolve(createTestProcessedImage(testImage)),
-                'en'
+                'en',
+                'Test instructions'
             ))
                 .rejects.toThrow('Failed to analyze image - no response text');
         });
@@ -73,7 +75,8 @@ describe('ImageAnalyzer', () => {
             const testImage = await createTestImage();
             await expect(analyzer.analyze(
                 Promise.resolve(createTestProcessedImage(testImage)),
-                'en'
+                'en',
+                'Test instructions'
             ))
                 .rejects.toThrow('Error analyzing image');
         });

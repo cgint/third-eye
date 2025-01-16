@@ -5,6 +5,11 @@
     import { language } from '$lib/stores/languageStore';
     import { cameraConsent } from '$lib/stores/consentStore';
     import { IMAGE_MIME_TYPE, IMAGE_EXTENSION, IMAGE_QUALITY, IMAGE_WIDTH, IMAGE_HEIGHT } from '$lib/constants';
+    import { scenarios, selectedScenarioId } from '$lib/stores/scenarioStore';
+
+    export let instructions: string;
+
+    $: scenarioName = $scenarios.find(s => s.id === $selectedScenarioId)?.name || 'Food Product Analysis';
 
     let video: HTMLVideoElement;
     let canvas: HTMLCanvasElement;
@@ -76,6 +81,7 @@
             formData.append('file', blob, `image.${IMAGE_EXTENSION}`);
             formData.append('password', $password);
             formData.append('language', $language);
+            formData.append('instructions', instructions);
             const response = await fetch('/api/analyze', {
                 method: 'POST',
                 body: formData
@@ -134,7 +140,7 @@
 </script>
 
 <div class="top_section">
-    <p>Take a photo of a grocery product to analyze its nutritional information</p>
+    <p>Take a photo for {scenarioName}</p>
     <div class="password-input">
         Password: <input type="password" bind:value={$password} />
         <button on:click={revokeConsent} title="Revoke camera access consent" style="width: 24px; height: 24px; padding: 0; font-size: 12px;">&#x26A0;</button>

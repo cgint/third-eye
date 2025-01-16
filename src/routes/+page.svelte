@@ -1,12 +1,15 @@
 <script lang="ts">
     import Camera from '$lib/components/Camera.svelte';
     import Consent from '$lib/components/Consent.svelte';
+    import ScenarioManager from '$lib/components/ScenarioManager.svelte';
     import { cameraConsent } from '$lib/stores/consentStore';
+    import { scenarios, selectedScenarioId, getSelectedScenario } from '$lib/stores/scenarioStore';
+
+    let showScenarioManager = false;
 </script>
 
 <svelte:head>
     <style>
-
         button {
             background-color: var(--primary-color);
             color: white;
@@ -37,7 +40,7 @@
             cursor: not-allowed;
             box-shadow: none;
         }
-        
+
         h1 {
             font-size: 2.5rem;
             margin-bottom: 0.75rem;
@@ -66,6 +69,22 @@
             border-radius: 12px;
             height: 64px;
         }
+
+        .scenario-selection {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .scenario-selection select {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: white;
+            min-width: 200px;
+        }
     </style>
 </svelte:head>
 
@@ -75,8 +94,18 @@
     <h1>Third Eye</h1>
 </div>
 
-{#if $cameraConsent}
-    <Camera />
-{:else}
+{#if !$cameraConsent}
     <Consent />
+{:else if showScenarioManager}
+    <ScenarioManager on:close={() => showScenarioManager = false} />
+{:else}
+    <div class="scenario-selection">
+        <select bind:value={$selectedScenarioId}>
+            {#each $scenarios as scenario}
+                <option value={scenario.id}>{scenario.name}</option>
+            {/each}
+        </select>
+        <button on:click={() => showScenarioManager = true}>Manage Scenarios</button>
+    </div>
+    <Camera instructions={getSelectedScenario()?.instructions || ''} />
 {/if}

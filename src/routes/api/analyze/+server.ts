@@ -11,13 +11,14 @@ const model = genAI.getGenerativeModel({ model: GEMINI_MODEL_NAME });
 const imageAnalyzer = new ImageAnalyzer(model);
 
 export async function POST({ request }: RequestEvent) {
+    console.log('Request received');
     try {
-        console.log('Request received');
         const formData = await request.formData();
         const file = formData.get('file') as File;
         const mimeType = formData.get('mimeType') as string;
         const password = formData.get('password') as string;
         const language = formData.get('language') as string || 'de';
+        const instructions = formData.get('instructions')?.toString() || '';
 
         // Trim passwords to handle any whitespace issues
         const submittedPassword = password?.toString().trim();
@@ -41,7 +42,7 @@ export async function POST({ request }: RequestEvent) {
 
         try {
             console.log('About to analyze image');
-            const result = await imageAnalyzer.analyze(getStringFromFile(file, mimeType), language);
+            const result = await imageAnalyzer.analyze(getStringFromFile(file, mimeType), language, instructions);
             console.log('Image analyzed');
             return json(result);
         } catch (error) {
