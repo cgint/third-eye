@@ -5,6 +5,7 @@ export interface Scenario {
     name: string;
     instructions: string;
     isEditable: boolean;
+    displayInManageView: boolean;
 }
 
 // Default scenarios that cannot be edited
@@ -26,31 +27,49 @@ Start with a very short and easy to grasp table with two columns where the first
 and the second column contains very short information if the product contains the allergen or ingredient.
 Please be specific and concise in your response.
 People should get a good idea of what the product is about and if it might be suitable for them.`,
-        isEditable: false
+        isEditable: false,
+        displayInManageView: true
     },
     {
         id: 'not-food-product',
         name: 'General Object Analysis',
         instructions: `Describe what you can identify on the picture and what might be of specific interest to the user.`,
-        isEditable: false
+        isEditable: false,
+        displayInManageView: true
+    },
+    {
+        id: 'custom',
+        name: 'Custom Instructions',
+        instructions: '',
+        isEditable: false,
+        displayInManageView: false
     }
 ];
 
-// Create stores
-export const scenarios = writable<Scenario[]>([...defaultScenarios]);
-export const selectedScenarioId = writable<string>(defaultScenarios[0].id);
+// Create stores with empty initial state
+export const scenarios = writable<Scenario[]>([]);
+export const selectedScenarioId = writable<string>('');
 
 // Load scenarios from localStorage on initialization
 if (typeof window !== 'undefined') {
     const savedScenarios = localStorage.getItem('userScenarios');
-    if (savedScenarios) {
-        const userScenarios = JSON.parse(savedScenarios);
-        scenarios.set([...defaultScenarios, ...userScenarios]);
-    }
+    const userScenarios = savedScenarios ? JSON.parse(savedScenarios) : [];
+    
+    // Combine default and user scenarios, ensuring no duplicates
+    const combinedScenarios = [
+        ...defaultScenarios,
+        ...userScenarios.filter((us: Scenario) => 
+            !defaultScenarios.some(ds => ds.id === us.id)
+        )
+    ];
+    
+    scenarios.set(combinedScenarios);
 
     const savedSelectedId = localStorage.getItem('selectedScenarioId');
     if (savedSelectedId) {
         selectedScenarioId.set(savedSelectedId);
+    } else {
+        selectedScenarioId.set(defaultScenarios[0].id);
     }
 
     // Subscribe to changes and save to localStorage
@@ -71,7 +90,8 @@ export function addScenario(name: string, instructions: string): void {
         id,
         name,
         instructions,
-        isEditable: true
+        isEditable: true,
+        displayInManageView: true
     };
     scenarios.update(s => [...s, newScenario]);
 }

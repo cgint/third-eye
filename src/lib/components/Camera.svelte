@@ -6,10 +6,13 @@
     import { cameraConsent } from '$lib/stores/consentStore';
     import { IMAGE_MIME_TYPE, IMAGE_EXTENSION, IMAGE_QUALITY, IMAGE_WIDTH, IMAGE_HEIGHT } from '$lib/constants';
     import { scenarios, selectedScenarioId } from '$lib/stores/scenarioStore';
+    import { customInstructions } from '$lib/stores/customInstructionsStore';
 
     export let instructions: string;
 
-    $: scenarioName = $scenarios.find(s => s.id === $selectedScenarioId)?.name || 'Food Product Analysis';
+    $: scenarioName = $scenarios.find(s => s.id === $selectedScenarioId)?.name || '';
+    $: isCustomScenario = $selectedScenarioId === 'custom';
+    $: effectiveInstructions = isCustomScenario ? $customInstructions : instructions;
 
     let video: HTMLVideoElement;
     let canvas: HTMLCanvasElement;
@@ -81,7 +84,7 @@
             formData.append('file', blob, `image.${IMAGE_EXTENSION}`);
             formData.append('password', $password);
             formData.append('language', $language);
-            formData.append('instructions', instructions);
+            formData.append('instructions', effectiveInstructions);
             const response = await fetch('/api/analyze', {
                 method: 'POST',
                 body: formData
@@ -138,9 +141,7 @@
         initCamera();
     }
 </script>
-
 <div class="top_section">
-    <p>Take a photo for {scenarioName}</p>
     <div class="password-input">
         Password: <input type="password" bind:value={$password} />
         <button on:click={revokeConsent} title="Revoke camera access consent" style="width: 24px; height: 24px; padding: 0; font-size: 12px;">&#x26A0;</button>
@@ -165,6 +166,18 @@
             aria-label="Captured photo"
         ></canvas>
     </div>
+    
+    {#if isCustomScenario}
+        <div class="custom-instructions">
+            <strong>Custom Instructions</strong>
+            <textarea
+                bind:value={$customInstructions}
+                placeholder="Enter your custom instructions for analyzing the image..."
+                rows="2"
+                style="width: 350px;"
+            ></textarea>
+        </div>
+    {/if}
 
     <div>
         <button 
@@ -173,7 +186,7 @@
             on:click={handleCapture}
             disabled
         >
-            Take Photo
+            Take Photo and Analyze
         </button>
         <button 
             bind:this={retakeBtn} 
@@ -308,5 +321,28 @@
         #result:hover {
             transform: none;
         }
+    }
+
+    .custom-instructions {
+        width: 100%;
+        max-width: 500px;
+        margin: 20px auto;
+    }
+
+    .custom-instructions textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 1rem;
+        line-height: 1.5;
+        resize: vertical;
+        transition: border-color 0.2s ease;
+    }
+
+    .custom-instructions textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
     }
 </style>

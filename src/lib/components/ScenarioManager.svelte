@@ -49,9 +49,10 @@
 
     <div class="scenarios-list">
         {#each $scenarios as scenario}
-            <div class="scenario-item">
-                <div class="scenario-info">
-                    <h3>{scenario.name}</h3>
+            {#if scenario.displayInManageView}
+                <div class="scenario-item">
+                    <div class="scenario-info">
+                        <h3>{scenario.name}</h3>
                     <p class="instructions">{scenario.instructions}</p>
                 </div>
                 {#if scenario.isEditable}
@@ -60,7 +61,8 @@
                         <button class="delete" on:click={() => handleDelete(scenario.id)}>Delete</button>
                     </div>
                 {/if}
-            </div>
+                </div>
+            {/if}
         {/each}
     </div>
 

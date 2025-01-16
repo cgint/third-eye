@@ -99,6 +99,7 @@
 {:else if showScenarioManager}
     <ScenarioManager on:close={() => showScenarioManager = false} />
 {:else}
+
     <div class="scenario-selection">
         <select bind:value={$selectedScenarioId}>
             {#each $scenarios as scenario}
@@ -107,5 +108,5 @@
         </select>
         <button on:click={() => showScenarioManager = true}>Manage Scenarios</button>
     </div>
-    <Camera instructions={getSelectedScenario()?.instructions || ''} />
+    <Camera instructions={$scenarios.find(s => s.id === $selectedScenarioId)?.instructions || ''} />
 {/if}
