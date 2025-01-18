@@ -270,7 +270,7 @@
 {#if $analysisHistory.length > 0}
 <div class="history-section">
     <div class="history-header">
-        <div class="history-title">Analysis History</div>
+        <div class="history-title">Analysis History <span class="history-subtitle">(Stored in browser)</span></div>
         <button class="clear-history" on:click={handleDeleteHistory}>Delete History</button>
     </div>
     
@@ -500,11 +500,17 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-    }
+    }   
 
     .history-title {
         font-size: 1.25rem;
         font-weight: 600;
         color: var(--primary-color);
+    }
+
+    .history-subtitle {
+        font-size: 0.666rem;
+        color: #666;
+        font-style: italic;
     }
 </style>
