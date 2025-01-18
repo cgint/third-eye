@@ -74,10 +74,14 @@
     async function analyzeImage() {
         loading.style.display = 'block';
         try {
+            // Create the blob once
             const blob = await new Promise<Blob>((resolve) => {
                 canvas.toBlob((b) => resolve(b!), IMAGE_MIME_TYPE, IMAGE_QUALITY);
             });
             console.log('blob size', blob.size);
+
+            // Create URL for display
+            const imageUrl = URL.createObjectURL(blob);
 
             const formData = new FormData();
             formData.append('mimeType', IMAGE_MIME_TYPE);
@@ -85,25 +89,32 @@
             formData.append('password', $password);
             formData.append('language', $language);
             formData.append('instructions', effectiveInstructions);
-            const response = await fetch('/api/analyze', {
+            const apiResponse = await fetch('/api/analyze', {
                 method: 'POST',
                 body: formData
             });
 
-            if (response.status === 401) {
+            if (apiResponse.status === 401) {
                 result.innerHTML = 'Access denied. Please check that you have entered the correct password.';
                 console.error('Access denied. Please check that you have entered the correct password.');
+                URL.revokeObjectURL(imageUrl); // Clean up the URL
                 return;
             }
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            if (!apiResponse.ok) {
+                URL.revokeObjectURL(imageUrl); // Clean up the URL
+                throw new Error(`HTTP error! status: ${apiResponse.status}`);
             }
 
-            const data = await response.json();
+            const data = await apiResponse.json();
             const convertedContent = marked.parse(data.result_text || 'No additional information available');
             
             result.innerHTML = `
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <img src="${imageUrl}" 
+                         alt="Analyzed image" 
+                         style="max-width: 320px; border: 1px solid #ccc; border-radius: 4px;" />
+                </div>
                 <h3>Analysis Results:</h3>
                 <p><strong>Additional Information:</strong></p>
                 <div>${convertedContent}</div>
