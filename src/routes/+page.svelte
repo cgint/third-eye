@@ -3,7 +3,7 @@
     import Consent from '$lib/components/Consent.svelte';
     import ScenarioManager from '$lib/components/ScenarioManager.svelte';
     import { cameraConsent } from '$lib/stores/consentStore';
-    import { scenarios, selectedScenarioId, getSelectedScenario } from '$lib/stores/scenarioStore';
+    import { scenarios, selectedScenarioId } from '$lib/stores/scenarioStore';
 
     let showScenarioManager = false;
 </script>
