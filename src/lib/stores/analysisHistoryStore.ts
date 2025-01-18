@@ -31,6 +31,15 @@ function createAnalysisHistoryStore() {
                 return newEntries;
             });
         },
+        deleteEntry: (timestamp: number) => {
+            update(entries => {
+                const newEntries = entries.filter(entry => entry.timestamp !== timestamp);
+                if (browser) {
+                    localStorage.setItem('analysisHistory', JSON.stringify(newEntries));
+                }
+                return newEntries;
+            });
+        },
         clear: () => {
             set([]);
             if (browser) {

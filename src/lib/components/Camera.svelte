@@ -8,6 +8,7 @@
     import { scenarios, selectedScenarioId } from '$lib/stores/scenarioStore';
     import { customInstructions } from '$lib/stores/customInstructionsStore';
     import { analysisHistory } from '$lib/stores/analysisHistoryStore';
+    import ConfirmDialog from './ConfirmDialog.svelte';
     
     export let instructions: string;
 
@@ -23,6 +24,10 @@
     let loading: HTMLDivElement;
     let error: HTMLDivElement;
     let stream: MediaStream | null = null;
+
+    let showDeleteHistoryConfirm = false;
+    let showDeleteEntryConfirm = false;
+    let entryToDelete: number | null = null;
 
     // Configure marked to allow HTML in markdown
     marked.setOptions({
@@ -155,6 +160,28 @@
         hideError();
         initCamera();
     }
+
+    function handleDeleteHistory() {
+        showDeleteHistoryConfirm = true;
+    }
+
+    function handleDeleteEntry(timestamp: number) {
+        entryToDelete = timestamp;
+        showDeleteEntryConfirm = true;
+    }
+
+    function confirmDeleteHistory() {
+        analysisHistory.clear();
+        showDeleteHistoryConfirm = false;
+    }
+
+    function confirmDeleteEntry() {
+        if (entryToDelete !== null) {
+            analysisHistory.deleteEntry(entryToDelete);
+            entryToDelete = null;
+        }
+        showDeleteEntryConfirm = false;
+    }
 </script>
 <div class="top-section">
     <p>Take a photo for {scenarioName}</p>
@@ -226,14 +253,44 @@
     <div bind:this={error} id="error" class="error"></div>
 </div>
 
+<ConfirmDialog
+    show={showDeleteHistoryConfirm}
+    title="Delete All History"
+    message="Are you sure you want to delete all analysis history? This action cannot be undone."
+    onConfirm={confirmDeleteHistory}
+    onCancel={() => showDeleteHistoryConfirm = false}
+/>
+
+<ConfirmDialog
+    show={showDeleteEntryConfirm}
+    title="Delete Entry"
+    message="Are you sure you want to delete this analysis entry? This action cannot be undone."
+    onConfirm={confirmDeleteEntry}
+    onCancel={() => {
+        showDeleteEntryConfirm = false;
+        entryToDelete = null;
+    }}
+/>
+
 {#if $analysisHistory.length > 0}
 <div class="history-section">
-    <!-- <h2>Analysis History</h2> -->
-    <button class="clear-history" on:click={() => analysisHistory.clear()}>Clear History</button>
+    <div class="history-header">
+        <div class="history-title">Analysis History</div>
+        <button class="clear-history" on:click={handleDeleteHistory}>Delete History</button>
+    </div>
     
     {#each $analysisHistory as entry}
         <div class="result-entry">
-            <div class="timestamp">{new Date(entry.timestamp).toLocaleString()}</div>
+            <div class="entry-header">
+                <div class="timestamp">{new Date(entry.timestamp).toLocaleString()}</div>
+                <button 
+                    class="delete-entry" 
+                    on:click={() => handleDeleteEntry(entry.timestamp)}
+                    title="Delete this entry"
+                >
+                    Delete
+                </button>
+            </div>
             <div class="result-entry-image">
                 <!-- svelte-ignore a11y_img_redundant_alt -->
                 <img src={entry.imageUrl} alt="Analyzed image" />
@@ -418,5 +475,41 @@
     .custom-instructions textarea:focus {
         outline: none;
         border-color: var(--primary-color);
+    }
+
+    .entry-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .delete-entry {
+        background-color: #ef4444;
+        padding: 4px 8px;
+        font-size: 0.875rem;
+    }
+
+    .delete-entry:hover {
+        background-color: #dc2626;
+    }
+
+    .history-header {
+        padding: 0px 8px;
+        border-radius: 16px;
+        background-color: rgba(200, 200, 200, 0.5);
+        text-align: left;
+        box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.08), 
+                    0 4px 12px -5px rgba(0, 0, 0, 0.04);
+        border: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .history-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--primary-color);
     }
 </style>
