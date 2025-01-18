@@ -4,43 +4,68 @@
     export let message: string;
     export let onConfirm: () => void;
     export let onCancel: () => void;
-</script>
 
-{#if show}
-<div class="modal-backdrop" on:click={onCancel}>
-    <div class="modal-content" on:click|stopPropagation>
-        <h2>{title}</h2>
-        <p>{message}</p>
-        <div class="button-group">
-            <button class="cancel" on:click={onCancel}>Cancel</button>
-            <button class="confirm" on:click={onConfirm}>Confirm</button>
-        </div>
-    </div>
-</div>
-{/if}
+    let dialog: HTMLDialogElement;
 
-<style>
-    .modal-backdrop {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 90%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
+    $: if (dialog) {
+        if (show && !dialog.open) {
+            dialog.showModal();
+        } else if (!show && dialog.open) {
+            dialog.close();
+        }
     }
 
-    .modal-content {
-        background: white;
+    function handleConfirm() {
+        dialog.close();
+        onConfirm();
+    }
+
+    function handleCancel() {
+        dialog.close();
+        onCancel();
+    }
+</script>
+
+<dialog
+    bind:this={dialog}
+    class="modal-content"
+    aria-labelledby="dialog-title"
+    aria-describedby="dialog-message"
+>
+    <h2 id="dialog-title">{title}</h2>
+    <p id="dialog-message">{message}</p>
+    <div class="button-group">
+        <button 
+            type="button"
+            class="cancel" 
+            on:click={handleCancel}
+        >
+            Cancel
+        </button>
+        <button 
+            type="button"
+            class="confirm" 
+            on:click={handleConfirm}
+        >
+            Confirm
+        </button>
+    </div>
+</dialog>
+
+<style>
+    dialog {
+        position: fixed;
         padding: 24px;
         border-radius: 16px;
         max-width: 400px;
         width: 90%;
+        border: none;
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
                     0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    dialog::backdrop {
+        background-color: rgba(0, 0, 0, 0.5);
     }
 
     h2 {
