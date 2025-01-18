@@ -7,7 +7,8 @@
     import { IMAGE_MIME_TYPE, IMAGE_EXTENSION, IMAGE_QUALITY, IMAGE_WIDTH, IMAGE_HEIGHT } from '$lib/constants';
     import { scenarios, selectedScenarioId } from '$lib/stores/scenarioStore';
     import { customInstructions } from '$lib/stores/customInstructionsStore';
-
+    import { analysisHistory } from '$lib/stores/analysisHistoryStore';
+    
     export let instructions: string;
 
     $: scenarioName = $scenarios.find(s => s.id === $selectedScenarioId)?.name || '';
@@ -19,8 +20,8 @@
     let captureBtn: HTMLButtonElement;
     let retakeBtn: HTMLButtonElement;
     let analyzeBtn: HTMLButtonElement;
-    let result: HTMLDivElement;
     let loading: HTMLDivElement;
+    let error: HTMLDivElement;
     let stream: MediaStream | null = null;
 
     // Configure marked to allow HTML in markdown
@@ -59,9 +60,19 @@
             });
         } catch (err) {
             console.error('Error accessing camera:', err);
-            result.innerHTML = 'Error accessing camera. Please ensure you have granted camera permissions.';
+            displayError('Error accessing camera. Please ensure you have granted camera permissions.');
             captureBtn.disabled = true;
         }
+    }
+
+    function displayError(message: string) {
+        error.innerHTML = message;
+        error.style.display = 'block';
+    }
+
+    function hideError() {
+        error.innerHTML = '';
+        error.style.display = 'none';
     }
 
     function stopCamera() {
@@ -95,8 +106,8 @@
             });
 
             if (apiResponse.status === 401) {
-                result.innerHTML = 'Access denied. Please check that you have entered the correct password.';
                 console.error('Access denied. Please check that you have entered the correct password.');
+                displayError('Access denied. Please check that you have entered the correct password.');
                 URL.revokeObjectURL(imageUrl); // Clean up the URL
                 return;
             }
@@ -107,21 +118,13 @@
             }
 
             const data = await apiResponse.json();
-            const convertedContent = marked.parse(data.result_text || 'No additional information available');
+            const noneEmptyContent = data.result_text || 'No additional information available'; 
             
-            result.innerHTML = `
-                <div style="text-align: center; margin-bottom: 1rem;">
-                    <img src="${imageUrl}" 
-                         alt="Analyzed image" 
-                         style="max-width: 320px; border: 1px solid #ccc; border-radius: 4px;" />
-                </div>
-                <h3>Analysis Results:</h3>
-                <p><strong>Additional Information:</strong></p>
-                <div>${convertedContent}</div>
-            `;
+            // Dispatch the analysis complete event
+            analysisHistory.addEntry(imageUrl, noneEmptyContent);
         } catch (err) {
             console.error('Error analyzing image:', err);
-            result.innerHTML = 'Error analyzing image. Please try again.';
+            displayError('Error analyzing image. Please try again.');
         } finally {
             loading.style.display = 'none';
         }
@@ -148,7 +151,8 @@
         captureBtn.style.display = 'inline';
         retakeBtn.style.display = 'none';
         analyzeBtn.style.display = 'none';
-        result.innerHTML = '';
+        loading.style.display = 'none';
+        hideError();
         initCamera();
     }
 </script>
@@ -219,9 +223,29 @@
     </div>
 
     <div bind:this={loading} id="loading" class="loading">Analyzing</div>
+    <div bind:this={error} id="error" class="error"></div>
 </div>
-<div bind:this={result} id="result"></div>
 
+{#if $analysisHistory.length > 0}
+<div class="history-section">
+    <!-- <h2>Analysis History</h2> -->
+    <button class="clear-history" on:click={() => analysisHistory.clear()}>Clear History</button>
+    
+    {#each $analysisHistory as entry}
+        <div class="result-entry">
+            <div class="timestamp">{new Date(entry.timestamp).toLocaleString()}</div>
+            <div class="result-entry-image">
+                <!-- svelte-ignore a11y_img_redundant_alt -->
+                <img src={entry.imageUrl} alt="Analyzed image" />
+            </div>
+            <h3>Analysis Results:</h3>
+            <div class="result-entry-content">
+                {@html marked.parse(entry.analysisText)}
+            </div>
+        </div>
+    {/each}
+</div>
+{/if}
 <style>
     :root {
         --primary-color: #6366F1;
@@ -286,7 +310,7 @@
         display: none;
     }
 
-    #result {
+    .result-entry {
         margin-top: 24px;
         padding: 24px;
         border-radius: 16px;
@@ -298,10 +322,48 @@
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    #result:hover {
+    .result-entry:hover {
         transform: translateY(-2px);
         box-shadow: 0 14px 24px -5px rgba(0, 0, 0, 0.12), 
                     0 6px 16px -5px rgba(0, 0, 0, 0.06);
+    }
+
+    .result-entry .result-entry-image {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .result-entry .result-entry-content {
+        margin-top: 1rem;
+    }
+
+    .result-entry img {
+        max-width: 320px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .result-entry .timestamp {
+        color: #666;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .history-section {
+        margin-top: 2rem;
+    }
+
+    /* .history-section h2 {
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+    } */
+
+    .clear-history {
+        background-color: #ef4444;
+    }
+
+    .clear-history:hover {
+        background-color: #dc2626;
     }
 
     .loading {
