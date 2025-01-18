@@ -392,7 +392,7 @@
     @media (hover: none) {
         button:hover:not(:disabled),
         .camera-container:hover,
-        #result:hover {
+        .result-entry:hover {
             transform: none;
         }
     }
