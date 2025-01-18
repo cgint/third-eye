@@ -96,9 +96,6 @@
             });
             console.log('blob size', blob.size);
 
-            // Create URL for display
-            const imageUrl = URL.createObjectURL(blob);
-
             const formData = new FormData();
             formData.append('mimeType', IMAGE_MIME_TYPE);
             formData.append('file', blob, `image.${IMAGE_EXTENSION}`);
@@ -113,20 +110,18 @@
             if (apiResponse.status === 401) {
                 console.error('Access denied. Please check that you have entered the correct password.');
                 displayError('Access denied. Please check that you have entered the correct password.');
-                URL.revokeObjectURL(imageUrl); // Clean up the URL
                 return;
             }
 
             if (!apiResponse.ok) {
-                URL.revokeObjectURL(imageUrl); // Clean up the URL
                 throw new Error(`HTTP error! status: ${apiResponse.status}`);
             }
 
             const data = await apiResponse.json();
             const noneEmptyContent = data.result_text || 'No additional information available'; 
             
-            // Dispatch the analysis complete event
-            analysisHistory.addEntry(imageUrl, noneEmptyContent);
+            // Store the analysis with the blob directly
+            await analysisHistory.addEntry(blob, noneEmptyContent);
         } catch (err) {
             console.error('Error analyzing image:', err);
             displayError('Error analyzing image. Please try again.');
@@ -293,7 +288,7 @@
             </div>
             <div class="result-entry-image">
                 <!-- svelte-ignore a11y_img_redundant_alt -->
-                <img src={entry.imageUrl} alt="Analyzed image" />
+                <img src={entry.imageData} alt="Analyzed image" />
             </div>
             <h3>Analysis Results:</h3>
             <div class="result-entry-content">
