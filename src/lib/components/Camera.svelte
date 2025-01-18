@@ -270,8 +270,7 @@
 {#if $analysisHistory.length > 0}
 <div class="history-section">
     <div class="history-header">
-        <div class="history-title">History</div>
-        <div class="history-subtitle">(Stored in browser)</div>
+        <div class="history-title">History<span class="history-subtitle">(Stored in your browser)</span></div>
         <button class="clear-history" on:click={handleDeleteHistory}>Delete All</button>
     </div>
     
