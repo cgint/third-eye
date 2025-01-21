@@ -104,6 +104,7 @@
 
     async function analyzeImage() {
         loading.style.display = 'block';
+        hideError();
         try {
             // Create the blob once
             const blob = await new Promise<Blob>((resolve) => {
