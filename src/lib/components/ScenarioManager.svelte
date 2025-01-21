@@ -1,7 +1,8 @@
 <script lang="ts">
-    import { scenarios, selectedScenarioId, addScenario, updateScenario, deleteScenario, type Scenario } from '$lib/stores/scenarioStore';
+    import { getScenarioStores, type Scenario } from '$lib/stores/scenarioStore';
     import { createEventDispatcher } from 'svelte';
 
+    const { scenarios, selectedScenarioId, addScenario, updateScenario, deleteScenario } = getScenarioStores();
     const dispatch = createEventDispatcher();
     let editingScenario: Scenario | null = null;
     let newScenarioName = '';

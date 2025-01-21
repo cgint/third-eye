@@ -1,4 +1,5 @@
-import { writable, get } from 'svelte/store';
+import { writable, get, type Writable } from 'svelte/store';
+import { browser } from '$app/environment';
 
 export interface Scenario {
     id: string;
@@ -46,79 +47,104 @@ People should get a good idea of what the product is about and if it might be su
     }
 ];
 
-// Create stores with empty initial state
-export const scenarios = writable<Scenario[]>([]);
-export const selectedScenarioId = writable<string>('');
-
-// Load scenarios from localStorage on initialization
-if (typeof window !== 'undefined') {
-    const savedScenarios = localStorage.getItem('userScenarios');
-    const userScenarios = savedScenarios ? JSON.parse(savedScenarios) : [];
-    
-    // Combine default and user scenarios, ensuring no duplicates
-    const combinedScenarios = [
-        ...defaultScenarios,
-        ...userScenarios.filter((us: Scenario) => 
-            !defaultScenarios.some(ds => ds.id === us.id)
-        )
-    ];
-    
-    scenarios.set(combinedScenarios);
-
-    const savedSelectedId = localStorage.getItem('selectedScenarioId');
-    if (savedSelectedId) {
-        selectedScenarioId.set(savedSelectedId);
-    } else {
-        selectedScenarioId.set(defaultScenarios[0].id);
-    }
-
-    // Subscribe to changes and save to localStorage
-    scenarios.subscribe(value => {
-        const userScenarios = value.filter(s => s.isEditable);
-        localStorage.setItem('userScenarios', JSON.stringify(userScenarios));
-    });
-
-    selectedScenarioId.subscribe(value => {
-        localStorage.setItem('selectedScenarioId', value);
-    });
+interface ScenarioStores {
+    scenarios: Writable<Scenario[]>;
+    selectedScenarioId: Writable<string>;
+    addScenario: (name: string, instructions: string) => void;
+    updateScenario: (id: string, name: string, instructions: string) => void;
+    deleteScenario: (id: string) => void;
+    getSelectedScenario: () => Scenario | undefined;
 }
 
-// Helper functions
-export function addScenario(name: string, instructions: string): void {
-    const id = `custom-${Date.now()}`;
-    const newScenario: Scenario = {
-        id,
-        name,
-        instructions,
-        isEditable: true,
-        displayInManageView: true
-    };
-    scenarios.update(s => [...s, newScenario]);
-}
+let scenarioStores: ScenarioStores | null = null;
 
-export function updateScenario(id: string, name: string, instructions: string): void {
-    scenarios.update(s => 
-        s.map(scenario => 
-            scenario.id === id && scenario.isEditable 
-                ? { ...scenario, name, instructions }
-                : scenario
-        )
-    );
-}
+export const getScenarioStores = () => {
+    if (!scenarioStores) {
+        // Create stores with empty initial state
+        const scenariosStore = writable<Scenario[]>([]);
+        const selectedScenarioIdStore = writable<string>('');
 
-export function deleteScenario(id: string): void {
-    scenarios.update(s => {
-        const scenario = s.find(sc => sc.id === id);
-        if (!scenario?.isEditable) return s;
-        
-        const newScenarios = s.filter(sc => sc.id !== id);
-        if (get(selectedScenarioId) === id) {
-            selectedScenarioId.set(defaultScenarios[0].id);
+        // Load scenarios from localStorage on initialization
+        if (browser) {
+            const savedScenarios = localStorage.getItem('userScenarios');
+            const userScenarios = savedScenarios ? JSON.parse(savedScenarios) as Scenario[] : [];
+            
+            // Combine default and user scenarios, ensuring no duplicates
+            const combinedScenarios = [
+                ...defaultScenarios,
+                ...userScenarios.filter((us: Scenario) => 
+                    !defaultScenarios.some(ds => ds.id === us.id)
+                )
+            ];
+            
+            scenariosStore.set(combinedScenarios);
+
+            const savedSelectedId = localStorage.getItem('selectedScenarioId');
+            if (savedSelectedId) {
+                selectedScenarioIdStore.set(savedSelectedId);
+            } else {
+                selectedScenarioIdStore.set(defaultScenarios[0].id);
+            }
+
+            // Subscribe to changes and save to localStorage
+            scenariosStore.subscribe(value => {
+                const userScenarios = value.filter(s => s.isEditable);
+                if (userScenarios.length === 0) {
+                    localStorage.removeItem('userScenarios');
+                } else {
+                    localStorage.setItem('userScenarios', JSON.stringify(userScenarios));
+                }
+            });
+
+            selectedScenarioIdStore.subscribe(value => {
+                localStorage.setItem('selectedScenarioId', value);
+            });
         }
-        return newScenarios;
-    });
-}
 
-export function getSelectedScenario(): Scenario | undefined {
-    return get(scenarios).find(s => s.id === get(selectedScenarioId));
-} 
+        scenarioStores = {
+            scenarios: scenariosStore,
+            selectedScenarioId: selectedScenarioIdStore,
+            addScenario: (name: string, instructions: string) => {
+                const id = `custom-${Date.now()}`;
+                const newScenario: Scenario = {
+                    id,
+                    name,
+                    instructions,
+                    isEditable: true,
+                    displayInManageView: true
+                };
+                scenariosStore.update(s => [...s, newScenario]);
+            },
+            updateScenario: (id: string, name: string, instructions: string) => {
+                scenariosStore.update(s => 
+                    s.map(scenario => 
+                        scenario.id === id && scenario.isEditable 
+                            ? { ...scenario, name, instructions }
+                            : scenario
+                    )
+                );
+            },
+            deleteScenario: (id: string) => {
+                scenariosStore.update(s => {
+                    const scenario = s.find(sc => sc.id === id);
+                    if (!scenario?.isEditable) return s;
+                    
+                    const newScenarios = s.filter(sc => sc.id !== id);
+                    const currentSelectedId = get(selectedScenarioIdStore);
+                    if (currentSelectedId === id) {
+                        selectedScenarioIdStore.set(defaultScenarios[0].id);
+                    }
+                    return newScenarios;
+                });
+            },
+            getSelectedScenario: () => {
+                return get(scenariosStore).find(s => s.id === get(selectedScenarioIdStore));
+            }
+        };
+    }
+    
+    return scenarioStores;
+};
+
+// Use in components:
+// const { scenarios, selectedScenarioId, addScenario, updateScenario, deleteScenario, getSelectedScenario } = getScenarioStores();

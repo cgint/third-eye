@@ -1,5 +1,7 @@
 <script lang="ts">
-    import { cameraConsent } from '$lib/stores/consentStore';
+    import { getCameraConsent } from '$lib/stores/consentStore';
+
+    const cameraConsent = getCameraConsent();
 
     function handleConsent() {
         $cameraConsent = true;
@@ -9,36 +11,58 @@
 <div class="consent-screen">
     
     <div class="content">
-        <h2>Before we begin</h2>
-        <p>
-            This application uses your device's camera to provide image analysis for your daily needs.
-            Therefore you will be asked to grant access to the camera.
-        </p>
-        <p>
-            Your permission is required to:
-        </p>
+        <div class="more-info-box">
+            <h2>Before we begin</h2>
+            <p>
+                This application uses your device's camera to provide image analysis for your daily needs.
+                Therefore you will be asked to grant access to the camera.
+            </p>
+            <p>
+                Your permission is required to:
+            </p>
+            
+            <ul>
+                <li>Capture pictures of the object in question</li>
+            </ul>
+
+            <button on:click={handleConsent} class="consent-button">
+                I understand and want to proceed
+            </button>
+            <p>
+                <strong>
+                    You can revoke access to the camera and local storage at any time by pressing the icon left of the language selection.
+                </strong>
+            </p>
+        </div>
         
-        <ul>
-            <li>Capture pictures of the object in question</li>
-        </ul>
+        <div class="more-info-box">
+            <p>
+                <strong>A little more information as your privacy is important to us!</strong>
+            </p>
+            <p>
+                The camera feed is processed locally and we don't store any images or video data permanently on our servers.
+                <br/>
+                <i>
+                    Yet the image is sent to Google's servers for analysis.
+                    So please use this tool for the purpose it is intended for only.
+                </i>
+            </p>
 
-        <button on:click={handleConsent} class="consent-button">
-            I understand and want to proceed
-        </button>
+            <p>
+                The images, historic analysis results and your custom scenario instructions are stored in your browser's local storage.
+            </p>
+        </div>
 
-        <p><i>
-            Your privacy is important.
-            The camera feed is processed locally and we don't store any images or video data permanently.
-        </i></p>
-
-        <p><i>
-            Yet the image is sent to Google's servers for analysis.
-            So please use this tool for the purpose it is intended for only.
-        </i></p>
     </div>
 </div>
 
 <style>
+    .more-info-box {
+        margin-top: 2rem;
+        padding: 0rem 1rem;
+        border: 1px solid var(--primary-color);
+        border-radius: 20px;
+    }
 
     .content {
         text-align: left;
@@ -51,7 +75,7 @@
     }
 
     .consent-button {
-        margin-top: 2rem;
+        margin-top: 0rem;
         padding: 12px 24px;
         font-size: 1.1rem;
         background-color: var(--primary-color);

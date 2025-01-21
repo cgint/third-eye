@@ -1,16 +1,24 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { marked } from 'marked';
-    import { password } from '$lib/stores/passwordStore';
-    import { language } from '$lib/stores/languageStore';
-    import { cameraConsent } from '$lib/stores/consentStore';
+    import { getPasswordStore } from '$lib/stores/passwordStore';
+    import { getLanguageStore } from '$lib/stores/languageStore';
+    import { getCameraConsent } from '$lib/stores/consentStore';
     import { IMAGE_MIME_TYPE, IMAGE_EXTENSION, IMAGE_QUALITY, IMAGE_WIDTH, IMAGE_HEIGHT } from '$lib/constants';
-    import { scenarios, selectedScenarioId } from '$lib/stores/scenarioStore';
-    import { customInstructions } from '$lib/stores/customInstructionsStore';
-    import { analysisHistory } from '$lib/stores/analysisHistoryStore';
+    import { getScenarioStores } from '$lib/stores/scenarioStore';
+    import { getCustomInstructions } from '$lib/stores/customInstructionsStore';
+    import { getAnalysisHistory } from '$lib/stores/analysisHistoryStore';
+    import { clearAllStores } from '$lib/stores/allStoresRemover';
     import ConfirmDialog from './ConfirmDialog.svelte';
     
     export let instructions: string;
+
+    const password = getPasswordStore();
+    const language = getLanguageStore();
+    const cameraConsent = getCameraConsent();
+    const { scenarios, selectedScenarioId } = getScenarioStores();
+    const customInstructions = getCustomInstructions();
+    const analysisHistory = getAnalysisHistory();
 
     $: scenarioName = $scenarios.find(s => s.id === $selectedScenarioId)?.name || '';
     $: isCustomScenario = $selectedScenarioId === 'custom';
@@ -43,6 +51,7 @@
 
     function revokeConsent() {
         $cameraConsent = false;
+        clearAllStores();
     }
 
     async function initCamera() {
@@ -182,7 +191,7 @@
     <p>Take a photo for {scenarioName}</p>
     <div class="password-input">
         Password: <input type="password" bind:value={$password} />
-        <button on:click={revokeConsent} title="Revoke camera access consent" style="width: 24px; height: 24px; padding: 0; font-size: 12px;">&#x26A0;</button>
+        <button on:click={revokeConsent} title="Revoke camera access and local storage consent" style="width: 24px; height: 24px; padding: 0; font-size: 12px;">&#x26A0;</button>
         Answer: <select bind:value={$language}>
             <option value="en">English</option>
             <option value="de">Deutsch</option>

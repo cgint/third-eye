@@ -2,8 +2,11 @@
     import Camera from '$lib/components/Camera.svelte';
     import Consent from '$lib/components/Consent.svelte';
     import ScenarioManager from '$lib/components/ScenarioManager.svelte';
-    import { cameraConsent } from '$lib/stores/consentStore';
-    import { scenarios, selectedScenarioId } from '$lib/stores/scenarioStore';
+    import { getCameraConsent } from '$lib/stores/consentStore';
+    import { getScenarioStores } from '$lib/stores/scenarioStore';
+
+    const cameraConsent = getCameraConsent();
+    const { scenarios, selectedScenarioId } = getScenarioStores();
 
     let showScenarioManager = false;
 </script>
