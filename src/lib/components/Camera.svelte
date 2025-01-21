@@ -36,6 +36,7 @@
     let showDeleteHistoryConfirm = false;
     let showDeleteEntryConfirm = false;
     let entryToDelete: number | null = null;
+    let showRevokeConsentConfirm = false;
 
     // Configure marked to allow HTML in markdown
     marked.setOptions({
@@ -50,8 +51,13 @@
     });
 
     function revokeConsent() {
+        showRevokeConsentConfirm = true;
+    }
+
+    function confirmRevokeConsent() {
         $cameraConsent = false;
         clearAllStores();
+        showRevokeConsentConfirm = false;
     }
 
     async function initCamera() {
@@ -256,6 +262,14 @@
     <div bind:this={loading} id="loading" class="loading">Analyzing</div>
     <div bind:this={error} id="error" class="error"></div>
 </div>
+
+<ConfirmDialog
+    show={showRevokeConsentConfirm}
+    title="Revoke Consent"
+    message="Are you sure you want to revoke camera access and clear all local data? This action cannot be undone."
+    onConfirm={confirmRevokeConsent}
+    onCancel={() => showRevokeConsentConfirm = false}
+/>
 
 <ConfirmDialog
     show={showDeleteHistoryConfirm}
