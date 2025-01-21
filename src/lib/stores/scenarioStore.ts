@@ -97,7 +97,11 @@ export const getScenarioStores = () => {
             });
 
             selectedScenarioIdStore.subscribe(value => {
-                localStorage.setItem('selectedScenarioId', value);
+                if (value == defaultScenarios[0].id) {
+                    localStorage.removeItem('selectedScenarioId');
+                } else {
+                    localStorage.setItem('selectedScenarioId', value);
+                }
             });
         }
 

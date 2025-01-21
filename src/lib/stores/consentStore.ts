@@ -17,7 +17,11 @@ export const getCameraConsent = () => {
         // Set up subscription only once when store is created
         consentStore.subscribe((value) => {
             if (browser) {
-                localStorage.setItem('cameraConsent', value.toString());
+                if (value) {
+                    localStorage.setItem('cameraConsent', value.toString());
+                } else {
+                    localStorage.removeItem('cameraConsent');
+                }
             }
         });
     }
