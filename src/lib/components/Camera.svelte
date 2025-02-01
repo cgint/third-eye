@@ -328,7 +328,7 @@
     {#each $analysisHistory as entry}
         <div class="result-entry">
             <div class="entry-header">
-                <div class="timestamp">{new Date(entry.timestamp).toLocaleString()}{entry.curImageQuality ? " (Q=" + entry.curImageQuality.toFixed(1) + ")" : ''}</div>
+                <div class="timestamp">{new Date(entry.timestamp).toLocaleString()}{entry.curImageQuality ? " (Q=" + entry.curImageQuality + ")" : ''}</div>
                 <button 
                     class="delete-entry" 
                     on:click={() => handleDeleteEntry(entry.timestamp)}
