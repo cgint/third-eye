@@ -5,11 +5,12 @@ export interface AnalysisEntry {
     imageData: string; // base64 string
     analysisText: string;
     timestamp: number;
+    curImageQuality: number | null;
 }
 
 interface AnalysisHistoryStore {
     subscribe: Writable<AnalysisEntry[]>['subscribe'];
-    addEntry: (blob: Blob, analysisText: string) => Promise<void>;
+    addEntry: (blob: Blob, analysisText: string, curImageQuality: number) => Promise<void>;
     deleteEntry: (timestamp: number) => void;
     clear: () => void;
 }
@@ -27,7 +28,7 @@ export const getAnalysisHistory = () => {
 
         analysisHistoryStore = {
             subscribe,
-            addEntry: async (blob: Blob, analysisText: string) => {
+            addEntry: async (blob: Blob, analysisText: string, curImageQuality: number) => {
                 // Convert blob to base64
                 const base64String = await new Promise<string>((resolve) => {
                     const reader = new FileReader();
@@ -37,12 +38,15 @@ export const getAnalysisHistory = () => {
                     };
                     reader.readAsDataURL(blob);
                 });
+                console.log('addEntry - blob - size', blob.size);
+                console.log('addEntry - base64String - size', base64String.length);
 
                 update(entries => {
                     const newEntries = [{
                         imageData: base64String,
                         analysisText,
-                        timestamp: Date.now()
+                        timestamp: Date.now(),
+                        curImageQuality: curImageQuality
                     }, ...entries];
                     
                     if (browser) {

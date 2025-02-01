@@ -10,6 +10,7 @@
     import { getAnalysisHistory } from '$lib/stores/analysisHistoryStore';
     import { clearAllStores } from '$lib/stores/allStoresRemover';
     import ConfirmDialog from './ConfirmDialog.svelte';
+    import type { AnalysisResult } from '$lib/models/analysis';
     
     export let instructions: string;
 
@@ -102,45 +103,71 @@
         }
     }
 
+    interface AnalysisResultWithBlob extends AnalysisResult {
+        blob: Blob;
+    }
+
+    async function analyzeImageInternal(curImageQuality: number): Promise<AnalysisResultWithBlob> {            
+        const blob = await new Promise<Blob>((resolve) => {
+            canvas.toBlob((b) => resolve(b!), IMAGE_MIME_TYPE, curImageQuality);
+        });
+        console.log('blob size', blob.size);
+
+        const formData = new FormData();
+        formData.append('mimeType', IMAGE_MIME_TYPE);
+        formData.append('file', blob, `image.${IMAGE_EXTENSION}`);
+        formData.append('password', $password);
+        formData.append('language', $language);
+        formData.append('curImageQuality', curImageQuality.toString());
+        formData.append('instructions', effectiveInstructions);
+        const apiResponse = await fetch('/api/analyze', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (apiResponse.status === 401) {
+            console.error('Access denied. Please check that you have entered the correct password.');
+            displayError('Access denied. Please check that you have entered the correct password.');
+            throw new Error('Access denied. Please check that you have entered the correct password.');
+        }
+
+        if (!apiResponse.ok) {
+            throw new Error(`HTTP error! status: ${apiResponse.status} - ${await apiResponse.text()}`);
+        }
+
+        const result = await apiResponse.json() as AnalysisResult;
+        return {
+            ...result,
+            blob: blob
+        } as AnalysisResultWithBlob;
+    }
+
+
     async function analyzeImage() {
         loading.style.display = 'block';
         hideError();
         try {
-            // Create the blob once
-            const blob = await new Promise<Blob>((resolve) => {
-                canvas.toBlob((b) => resolve(b!), IMAGE_MIME_TYPE, IMAGE_QUALITY);
-            });
-            console.log('blob size', blob.size);
-
-            const formData = new FormData();
-            formData.append('mimeType', IMAGE_MIME_TYPE);
-            formData.append('file', blob, `image.${IMAGE_EXTENSION}`);
-            formData.append('password', $password);
-            formData.append('language', $language);
-            formData.append('instructions', effectiveInstructions);
-            const apiResponse = await fetch('/api/analyze', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (apiResponse.status === 401) {
-                console.error('Access denied. Please check that you have entered the correct password.');
-                displayError('Access denied. Please check that you have entered the correct password.');
-                return;
-            }
-
-            if (!apiResponse.ok) {
-                throw new Error(`HTTP error! status: ${apiResponse.status}`);
-            }
-
-            const data = await apiResponse.json();
-            const noneEmptyContent = data.result_text || 'No additional information available'; 
-            
-            // Store the analysis with the blob directly
-            await analysisHistory.addEntry(blob, noneEmptyContent);
+            let curImageQuality = 0.9;
+            do {
+                try {
+                    console.log('Analyzing image with quality', curImageQuality);
+                    const data = await analyzeImageInternal(curImageQuality);
+                    const noneEmptyContent = data.result_text || 'No additional information available'; 
+                    // Store the analysis with the blob directly
+                    await analysisHistory.addEntry(data.blob, noneEmptyContent, curImageQuality);
+                    break;
+                } catch (err) {
+                    if( (err as Error).message.includes('Maximum call stack size exceeded')) {
+                        curImageQuality -= 0.1;
+                        console.error('Error analyzing image (retrying with lower quality):', err);
+                    } else {
+                        throw err;
+                    }
+                }
+            } while (curImageQuality >= 0.1);    
         } catch (err) {
             console.error('Error analyzing image:', err);
-            displayError('Error analyzing image. Please try again.');
+            displayError('Error analyzing image. Please try again. - ' + err);
         } finally {
             loading.style.display = 'none';
         }
@@ -301,7 +328,7 @@
     {#each $analysisHistory as entry}
         <div class="result-entry">
             <div class="entry-header">
-                <div class="timestamp">{new Date(entry.timestamp).toLocaleString()}</div>
+                <div class="timestamp">{new Date(entry.timestamp).toLocaleString()}{entry.curImageQuality ? " (Q=" + entry.curImageQuality.toFixed(1) + ")" : ''}</div>
                 <button 
                     class="delete-entry" 
                     on:click={() => handleDeleteEntry(entry.timestamp)}
