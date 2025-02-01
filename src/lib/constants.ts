@@ -11,7 +11,7 @@ export const REMOTE_LOGGER_PASSWORD: string = import.meta.env.VITE_REMOTE_LOGGER
 
 export const IMAGE_MIME_TYPE = import.meta.env.VITE_IMAGE_MIME_TYPE || 'image/webp';
 export const IMAGE_EXTENSION = import.meta.env.VITE_IMAGE_EXTENSION || 'webp';
-export const IMAGE_QUALITY = import.meta.env.VITE_IMAGE_QUALITY || 0.8;
+export const IMAGE_QUALITY_MAX = import.meta.env.VITE_IMAGE_QUALITY_MAX || 0.8;
 export const IMAGE_WIDTH = import.meta.env.VITE_IMAGE_WIDTH || 1024;
 export const IMAGE_HEIGHT = import.meta.env.VITE_IMAGE_HEIGHT || 1024;
 

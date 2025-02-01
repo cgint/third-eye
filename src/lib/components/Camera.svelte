@@ -4,7 +4,7 @@
     import { getPasswordStore } from '$lib/stores/passwordStore';
     import { getLanguageStore } from '$lib/stores/languageStore';
     import { getCameraConsent } from '$lib/stores/consentStore';
-    import { IMAGE_MIME_TYPE, IMAGE_EXTENSION, IMAGE_QUALITY, IMAGE_WIDTH, IMAGE_HEIGHT } from '$lib/constants';
+    import { IMAGE_MIME_TYPE, IMAGE_EXTENSION, IMAGE_QUALITY_MAX, IMAGE_WIDTH, IMAGE_HEIGHT } from '$lib/constants';
     import { getScenarioStores } from '$lib/stores/scenarioStore';
     import { getCustomInstructions } from '$lib/stores/customInstructionsStore';
     import { getAnalysisHistory } from '$lib/stores/analysisHistoryStore';
@@ -147,7 +147,7 @@
         loading.style.display = 'block';
         hideError();
         try {
-            let curImageQuality = 0.9;
+            let curImageQuality = IMAGE_QUALITY_MAX;
             do {
                 try {
                     console.log('Analyzing image with quality', curImageQuality);
