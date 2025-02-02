@@ -104,26 +104,22 @@
         }
     }
 
-    interface AnalysisResultWithBlob extends AnalysisResult {
-        blob: Blob;
-    }
-
-    async function analyzeImageInternal(curImageQuality: number): Promise<AnalysisResultWithBlob> {            
-        const blob = await new Promise<Blob>((resolve) => {
-            canvas.toBlob((b) => resolve(b!), IMAGE_MIME_TYPE, curImageQuality);
-        });
-        console.log('blob size', blob.size);
-
-        const formData = new FormData();
-        formData.append('mimeType', IMAGE_MIME_TYPE);
-        formData.append('file', blob, `image.${IMAGE_EXTENSION}`);
-        formData.append('password', $password);
-        formData.append('language', $language);
-        formData.append('curImageQuality', curImageQuality.toString());
-        formData.append('instructions', effectiveInstructions);
+    async function analyzeImageInternal(curImageQuality: number): Promise<AnalysisResult & { base64ImageData: string }> {
+        const base64ImageData = canvas.toDataURL(IMAGE_MIME_TYPE, curImageQuality);
+        
         const apiResponse = await fetch('/api/analyze', {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                base64Image: base64ImageData,
+                mimeType: IMAGE_MIME_TYPE,
+                password: $password,
+                language: $language,
+                curImageQuality: curImageQuality,
+                instructions: effectiveInstructions
+            })
         });
 
         if (apiResponse.status === 401) {
@@ -139,8 +135,8 @@
         const result = await apiResponse.json() as AnalysisResult;
         return {
             ...result,
-            blob: blob
-        } as AnalysisResultWithBlob;
+            base64ImageData
+        };
     }
 
     async function analyzeImage() {
@@ -152,8 +148,8 @@
                 try {
                     console.log('Analyzing image with quality', curImageQuality);
                     const data = await analyzeImageInternal(curImageQuality);
-                    const noneEmptyContent = data.result_text || 'No additional information available'; 
-                    await analysisHistory.addEntry(data.blob, noneEmptyContent, curImageQuality);
+                    const noneEmptyContent = data.result_text || 'No additional information available';
+                    await analysisHistory.addEntry(data.base64ImageData, noneEmptyContent, curImageQuality);
                     break;
                 } catch (err) {
                     if( (err as Error).message.includes('Maximum call stack size exceeded')) {
@@ -163,30 +159,12 @@
                         throw err;
                     }
                 }
-            } while (curImageQuality >= 0.1);    
+            } while (curImageQuality >= 0.1);
         } catch (err) {
             console.error('Error analyzing image:', err);
             displayError('Error analyzing image. Please try again. - ' + err);
         } finally {
             loading.style.display = 'none';
-        }
-    }
-
-    function base64ToBlob(base64: string, mimeType: string): Blob {
-        // Remove data URL prefix if present
-        const base64Data = base64.replace(/^data:image\/\w+;base64,/, '');
-        
-        try {
-            const byteCharacters = atob(base64Data);
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {
-                byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
-            return new Blob([byteArray], { type: mimeType });
-        } catch (error) {
-            console.error('Error converting base64 to blob:', error);
-            throw new Error('Invalid base64 data');
         }
     }
 
@@ -201,19 +179,21 @@
             displayError('Analysis entry not found.');
             return;
         }
-        const blob = base64ToBlob(entry.imageData, IMAGE_MIME_TYPE);
-        const formData = new FormData();
-        formData.append('mimeType', IMAGE_MIME_TYPE);
-        formData.append('file', blob, `image.${IMAGE_EXTENSION}`);
-        formData.append('password', $password);
-        formData.append('language', $language);
-        formData.append('instructions', effectiveInstructions);
-        formData.append('followup', question);
-        formData.append('previousAnalysis', entry.analysisText);
         try {
             const apiResponse = await fetch('/api/analyze', {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    base64Image: entry.imageData,
+                    mimeType: IMAGE_MIME_TYPE,
+                    password: $password,
+                    language: $language,
+                    instructions: effectiveInstructions,
+                    followup: question,
+                    previousAnalysis: entry.analysisText
+                })
             });
             if (!apiResponse.ok) {
                 throw new Error(`HTTP error! status: ${apiResponse.status} - ${await apiResponse.text()}`);

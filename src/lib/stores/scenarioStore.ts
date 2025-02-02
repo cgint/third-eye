@@ -24,6 +24,8 @@ e. other
 2. Information regarding the product's nutritional value, including calories, protein, carbohydrates, and fat
 3. Any relevant product details
 
+Also give a short overview about the healthyness of ingredients in the product while focusing on potentially hidden or masked unhealthy ingredients.
+
 Start with a very short and easy to grasp table with two columns where the first names the allergen or ingredient
 and the second column contains very short information if the product contains the allergen or ingredient.
 Please be specific and concise in your response.

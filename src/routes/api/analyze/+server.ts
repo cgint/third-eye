@@ -13,12 +13,7 @@ const imageAnalyzer = new ImageAnalyzer(model);
 export async function POST({ request }: RequestEvent) {
     console.log('Request received');
     try {
-        const formData = await request.formData();
-        const file = formData.get('file') as File;
-        const mimeType = formData.get('mimeType') as string;
-        const password = formData.get('password') as string;
-        const language = formData.get('language') as string || 'de';
-        const instructions = formData.get('instructions')?.toString() || '';
+        const { base64Image, mimeType, password, language = 'de', instructions = '', followup, previousAnalysis } = await request.json();
 
         // Trim passwords to handle any whitespace issues
         const submittedPassword = password?.toString().trim();
@@ -30,9 +25,9 @@ export async function POST({ request }: RequestEvent) {
             return new Response('Unauthorized', { status: 401 });
         }
 
-        if (!file || !(file instanceof File)) {
-            console.error('No file uploaded');
-            return new Response('No file uploaded', { status: 400 });
+        if (!base64Image) {
+            console.error('No image uploaded');
+            return new Response('No image uploaded', { status: 400 });
         }
 
         if (!GEMINI_API_KEY) {
@@ -42,14 +37,19 @@ export async function POST({ request }: RequestEvent) {
 
         try {
             console.log('About to analyze image');
-            const followup = formData.get('followup')?.toString();
-            const previousAnalysis = formData.get('previousAnalysis')?.toString();
             let result;
+            const processedImage: ProcessedImage = {
+                mimeType: mimeType,
+                data: base64Image.split(',')[1] || base64Image // Remove data URL prefix if present
+            };
+
+            console.log('base64Image data size', processedImage.data.length);
+
             if (followup && previousAnalysis) {
                 console.log('About to analyze followup question');
-                result = await imageAnalyzer.analyzeFollowup(getStringFromFile(file, mimeType), previousAnalysis, followup, language, instructions);
+                result = await imageAnalyzer.analyzeFollowup(Promise.resolve(processedImage), previousAnalysis, followup, language, instructions);
             } else {
-                result = await imageAnalyzer.analyze(getStringFromFile(file, mimeType), language, instructions);
+                result = await imageAnalyzer.analyze(Promise.resolve(processedImage), language, instructions);
             }
             console.log('Image analyzed');
             return json(result);
@@ -82,16 +82,4 @@ function logStackTrace(error: Error) {
     const logMessage = 'Stack trace: ' + stackTrace;
     console.error(logMessage);
     remote_logger.log('error', logMessage);
-}
-
-async function getStringFromFile(file: File, mimeType: string): Promise<ProcessedImage> {
-    const buf: ArrayBuffer = await file.arrayBuffer();
-    console.log('getStringFromFile - buf-size', buf.byteLength);
-    const array = new Uint8Array(buf);
-    const array_base64 = btoa(String.fromCharCode(...array))
-    console.log('getStringFromFile - array_base64-size', array_base64.length);
-    return {
-        mimeType: mimeType,
-        data: array_base64
-    };
 }

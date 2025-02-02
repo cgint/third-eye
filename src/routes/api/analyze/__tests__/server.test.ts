@@ -26,7 +26,7 @@ import { TALK_PASSWORD } from '$lib/constants';
 import { createTestImage } from '../../../../lib/services/__tests__/test-helpers';
 
 describe('POST /api/analyze', () => {
-    let mockFormData: FormData;
+    let mockRequestBody: any;
     let mockRequest: Request;
 
     beforeEach(async () => {
@@ -38,19 +38,23 @@ describe('POST /api/analyze', () => {
             result_text: "Mock analysis result for testing"
         });
         
-        // Create test image and form data
+        // Create test image and convert to base64
         const imageBuffer = await createTestImage();
-        const imageBlob = new Blob([imageBuffer], { type: 'image/jpeg' });
-        const imageFile = new File([imageBlob], 'test.jpg', { type: 'image/jpeg' });
+        const base64Image = Buffer.from(imageBuffer).toString('base64');
         
-        mockFormData = new FormData();
-        mockFormData.append('file', imageFile);
-        mockFormData.append('mimeType', 'image/jpeg');
-        mockFormData.append('password', TALK_PASSWORD || '');
+        mockRequestBody = {
+            base64Image: `data:image/jpeg;base64,${base64Image}`,
+            mimeType: 'image/jpeg',
+            password: TALK_PASSWORD || '',
+            language: 'en'
+        };
         
         mockRequest = new Request('http://localhost/api/analyze', {
             method: 'POST',
-            body: mockFormData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(mockRequestBody)
         });
     });
 
@@ -65,21 +69,27 @@ describe('POST /api/analyze', () => {
     });
 
     it('should return 401 for invalid password', async () => {
-        mockFormData.set('password', 'wrong-password');
+        mockRequestBody.password = 'wrong-password';
         mockRequest = new Request('http://localhost/api/analyze', {
             method: 'POST',
-            body: mockFormData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(mockRequestBody)
         });
 
         const response = await POST({ request: mockRequest } as any);
         expect(response.status).toBe(401);
     });
 
-    it('should return 400 when no file is uploaded', async () => {
-        mockFormData.delete('file');
+    it('should return 400 when no image is provided', async () => {
+        mockRequestBody.base64Image = undefined;
         mockRequest = new Request('http://localhost/api/analyze', {
             method: 'POST',
-            body: mockFormData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(mockRequestBody)
         });
 
         const response = await POST({ request: mockRequest } as any);
