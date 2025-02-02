@@ -21,6 +21,7 @@
     const customInstructions = getCustomInstructions();
     const analysisHistory = getAnalysisHistory();
     let followupQuestions: Record<number, string> = {};
+    let isFollowupLoading: Record<number, boolean> = {};
 
     $: scenarioName = $scenarios.find(s => s.id === $selectedScenarioId)?.name || '';
     $: isCustomScenario = $selectedScenarioId === 'custom';
@@ -180,6 +181,7 @@
             return;
         }
         try {
+            isFollowupLoading[timestamp] = true;
             const apiResponse = await fetch('/api/analyze', {
                 method: 'POST',
                 headers: {
@@ -205,6 +207,8 @@
         } catch (err) {
             console.error('Error asking followup for entry', timestamp, err);
             displayError('Error asking followup. Please try again.');
+        } finally {
+            isFollowupLoading[timestamp] = false;
         }
     }
 
@@ -386,11 +390,23 @@
             <h3>Analysis Results:</h3>
             <div class="result-entry-content">
                 {@html markedParseSimplify(entry.analysisText)}
-                <div class="followup-section" style="margin-top:8px;">
-                    <input type="text" bind:value={followupQuestions[entry.timestamp]} placeholder="Enter followup question" style="width: 300px; padding: 8px; margin-right: 8px;" />
-                    <button on:click={() => handleFollowupForEntry(entry.timestamp)} style="padding: 8px 12px;">Ask Followup</button>
-                    {#if entry.chatHistory}
-                        <div class="chat-history" style="margin-top: 8px; font-size: 0.9rem; border-top: 1px solid #ccc; padding-top: 8px;">
+                <div class="followup-section">
+                    <div class="followup-input">
+                        <input type="text" bind:value={followupQuestions[entry.timestamp]} placeholder="Enter followup question" 
+                            on:keydown={(e) => {
+                                if (e.key === 'Enter') {
+                                    handleFollowupForEntry(entry.timestamp);
+                                }
+                            }}
+                        />
+                        {#if isFollowupLoading[entry.timestamp]}
+                            <div class="loading" style="display: inline-block; margin: 0;">Answering</div>
+                        {:else}
+                            <button on:click={() => handleFollowupForEntry(entry.timestamp)}>Ask Followup</button>
+                        {/if}
+                    </div>
+                    {#if entry.chatHistory && entry.chatHistory.length > 0}
+                        <div class="followup-history">
                             {#each entry.chatHistory as chat}
                                 <div class="chat-message">
                                     <strong>Q:</strong> {chat.question}<br/>
@@ -407,6 +423,33 @@
 {/if}
 
 <style>
+    .followup-section {
+        margin-top: 8px;
+    }
+
+    .followup-input {
+        display: flex;
+        align-items: center;
+        height: 46px;
+    }
+
+    .followup-input input {
+        width: 60%;
+        padding: 8px;
+        margin-right: 8px;
+    }
+
+    .followup-input button {
+        padding: 8px 12px;
+    }
+
+    .followup-history {
+        margin-top: 8px;
+        font-size: 0.9rem;
+        border-top: 1px solid #ccc;
+        padding-top: 8px;
+    }
+
     :root {
         --primary-color: #6366F1;
         --primary-hover: #4F46E5;
