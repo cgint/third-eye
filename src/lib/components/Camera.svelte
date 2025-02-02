@@ -22,7 +22,6 @@
     const analysisHistory = getAnalysisHistory();
     let chatHistories: Record<number, { question: string, answer: string }[]> = {};
     let followupQuestions: Record<number, string> = {};
-    let followupQuestion = '';
     let lastBlobLocal: Blob | null = null;
     let lastAnalysisText = '';
 
@@ -174,45 +173,6 @@
         } catch (err) {
             console.error('Error analyzing image:', err);
             displayError('Error analyzing image. Please try again. - ' + err);
-        } finally {
-            loading.style.display = 'none';
-        }
-    }
-
-    async function handleFollowup() {
-        if (!lastBlobLocal) {
-            displayError('No image available for followup.');
-            return;
-        }
-        if (!followupQuestion || followupQuestion.trim() === '') {
-            displayError('Please enter a followup question.');
-            return;
-        }
-        loading.style.display = 'block';
-        hideError();
-        const formData = new FormData();
-        formData.append('mimeType', IMAGE_MIME_TYPE);
-        formData.append('file', lastBlobLocal, `image.${IMAGE_EXTENSION}`);
-        formData.append('password', $password);
-        formData.append('language', $language);
-        formData.append('instructions', effectiveInstructions);
-        formData.append('followup', followupQuestion);
-        formData.append('previousAnalysis', lastAnalysisText);
-        try {
-            const apiResponse = await fetch('/api/analyze', {
-                method: 'POST',
-                body: formData
-            });
-            if (!apiResponse.ok) {
-                throw new Error(`HTTP error! status: ${apiResponse.status} - ${await apiResponse.text()}`);
-            }
-            const result = await apiResponse.json();
-            await analysisHistory.addEntry(lastBlobLocal, result.result_text || '', IMAGE_QUALITY_MAX);
-            lastAnalysisText = result.result_text || '';
-            followupQuestion = '';
-        } catch (err) {
-            console.error('Error asking followup:', err);
-            displayError('Error asking followup. Please try again.');
         } finally {
             loading.style.display = 'none';
         }
@@ -386,10 +346,6 @@
         >
             Analyze Again
         </button>
-    </div>
-    <div class="followup-section" style="margin-top:16px;">
-        <input type="text" bind:value={followupQuestion} placeholder="Enter followup question" style="width: 300px; padding: 8px; margin-right: 8px;" />
-        <button on:click={handleFollowup} style="padding: 8px 12px;">Ask Followup</button>
     </div>
 
     <div bind:this={loading} id="loading" class="loading">Analyzing</div>

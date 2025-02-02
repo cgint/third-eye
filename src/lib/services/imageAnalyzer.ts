@@ -11,30 +11,34 @@ export class ImageAnalyzer {
         return { result_text: responseText };
     }
 
+    getLanguagePrompt(language: string): string {
+        const lang_to_answer = language === 'de' ? 'German' : 'English';
+        return `It is of highest importance for the user that you use the following language for your answer: ${lang_to_answer}`;
+    }
+
+    async analyzeThis(imageDataBase64: Promise<ProcessedImage>, prompt: string, language: string): Promise<AnalysisResult> {
+        const processedImage = await imageDataBase64;
+        const parts: Part[] = [
+            { text: prompt + '\n\n' + this.getLanguagePrompt(language) },
+            {
+                inlineData: {
+                    data: processedImage.data,
+                    mimeType: processedImage.mimeType
+                }
+            }
+        ];
+        const result = await this.aiModel.generateContent(parts);
+        const response = result.response;
+        return await this.parseAiResponse(response.text());
+    }
+
     async analyze(imageDataBase64: Promise<ProcessedImage>, language: string, instructions: string): Promise<AnalysisResult> {
         try {
-            const languagePrompt = language === 'de' ? 'German' : 'English';
             const prompt = `${instructions}
             
             If appropriate also help with clarifying if the product name is in a different language or it might be unclear what the main ingredient or use/purpose of the product is.
-            
-            It is of highest importance for the user that you use the following language for your answer: ${languagePrompt}
             `;
-            
-            const processedImage = await imageDataBase64;
-            const parts: Part[] = [
-                { text: prompt },
-                {
-                    inlineData: {
-                        data: processedImage.data,
-                        mimeType: processedImage.mimeType
-                    }
-                }
-            ];
-            
-            const result = await this.aiModel.generateContent(parts);
-            const response = result.response;
-            return await this.parseAiResponse(response.text());
+            return await this.analyzeThis(imageDataBase64, prompt, language);
         } catch (error) {
             if (error instanceof Error && error.message.includes('Failed to analyze image')) {
                 throw error;
@@ -45,28 +49,14 @@ export class ImageAnalyzer {
 
     async analyzeFollowup(imageDataBase64: Promise<ProcessedImage>, previousAnalysis: string, followupQuestion: string, language: string, instructions: string): Promise<AnalysisResult> {
         try {
-            const languagePrompt = language === 'de' ? 'German' : 'English';
             const prompt = `${instructions}
             
 Previous analysis: ${previousAnalysis}
 
 Followup question: ${followupQuestion}
 
-Please refine your answer using the above information.
-Answer in ${languagePrompt}`;
-            const processedImage = await imageDataBase64;
-            const parts: Part[] = [
-                { text: prompt },
-                {
-                    inlineData: {
-                        data: processedImage.data,
-                        mimeType: processedImage.mimeType
-                    }
-                }
-            ];
-            const result = await this.aiModel.generateContent(parts);
-            const response = result.response;
-            return await this.parseAiResponse(response.text());
+Please answer the followup question using the above information.`;
+            return await this.analyzeThis(imageDataBase64, prompt, language);
         } catch (error) {
             if (error instanceof Error && error.message.includes('Failed to analyze image')) {
                 throw error;
