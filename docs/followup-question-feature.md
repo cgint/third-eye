@@ -28,6 +28,7 @@ This document outlines a plan to add support for followup questions after an ima
 - **ImageAnalyzer Service** (`src/lib/services/imageAnalyzer.ts`): Implements the `analyzeFollowup` method for followup question handling.
 - **API Endpoint** (`src/routes/api/analyze/+server.ts`): Updated to support distinguishing initial analysis from followup requests.
 - **UI Component** (`src/lib/components/Camera.svelte`): Enhanced to provide a followup question interface and display chat history. Also allows selection of older analysis entries for followup.
+- **Analysis History Store** (`src/lib/stores/analysisHistoryStore.ts`): The `AnalysisEntry` interface has been updated to include an optional `chatHistory` property, which is an array of objects, each containing `question` and `answer` for the chat history.
 
 ## Detailed Design
 - Add an optional flag/parameter to indicate a followup request in API calls.

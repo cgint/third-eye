@@ -6,6 +6,7 @@ export interface AnalysisEntry {
     analysisText: string;
     timestamp: number;
     curImageQuality: number | null;
+    chatHistory?: { question: string; answer: string }[];
 }
 
 interface AnalysisHistoryStore {
@@ -13,6 +14,7 @@ interface AnalysisHistoryStore {
     addEntry: (blob: Blob, analysisText: string, curImageQuality: number) => Promise<void>;
     deleteEntry: (timestamp: number) => void;
     clear: () => void;
+    updateEntry: (entry: AnalysisEntry) => void;
 }
 
 let analysisHistoryStore: AnalysisHistoryStore | null = null;
@@ -20,7 +22,7 @@ let analysisHistoryStore: AnalysisHistoryStore | null = null;
 export const getAnalysisHistory = () => {
     if (!analysisHistoryStore) {
         // Initialize from localStorage if available
-        const initialValue: AnalysisEntry[] = browser 
+        const initialValue: AnalysisEntry[] = browser
             ? JSON.parse(localStorage.getItem('analysisHistory') || '[]')
             : [];
 
@@ -46,7 +48,8 @@ export const getAnalysisHistory = () => {
                         imageData: base64String,
                         analysisText,
                         timestamp: Date.now(),
-                        curImageQuality: curImageQuality
+                        curImageQuality: curImageQuality,
+                        chatHistory: []
                     }, ...entries];
                     
                     if (browser) {
@@ -69,6 +72,15 @@ export const getAnalysisHistory = () => {
                 if (browser) {
                     localStorage.removeItem('analysisHistory');
                 }
+            },
+            updateEntry: (entry: AnalysisEntry) => {
+                update(entries => {
+                    const newEntries = entries.map(e => e.timestamp === entry.timestamp ? entry : e);
+                    if (browser) {
+                        localStorage.setItem('analysisHistory', JSON.stringify(newEntries));
+                    }
+                    return newEntries;
+                });
             }
         };
     }
@@ -78,4 +90,4 @@ export const getAnalysisHistory = () => {
 
 // Use in components:
 // const analysisHistory = getAnalysisHistory();
-// $analysisHistory 
+// $analysisHistory

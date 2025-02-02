@@ -20,7 +20,6 @@
     const { scenarios, selectedScenarioId } = getScenarioStores();
     const customInstructions = getCustomInstructions();
     const analysisHistory = getAnalysisHistory();
-    let chatHistories: Record<number, { question: string, answer: string }[]> = {};
     let followupQuestions: Record<number, string> = {};
     let lastBlobLocal: Blob | null = null;
     let lastAnalysisText = '';
@@ -225,10 +224,8 @@
                 throw new Error(`HTTP error! status: ${apiResponse.status} - ${await apiResponse.text()}`);
             }
             const result = await apiResponse.json();
-            if (!chatHistories[timestamp]) {
-                chatHistories[timestamp] = [];
-            }
-            chatHistories[timestamp] = [...chatHistories[timestamp], { question, answer: result.result_text || '' }];
+            const updatedEntry = { ...entry, chatHistory: [...(entry.chatHistory || []), { question, answer: result.result_text || '' }] };
+            analysisHistory.updateEntry(updatedEntry);
             followupQuestions[timestamp] = '';
         } catch (err) {
             console.error('Error asking followup for entry', timestamp, err);
@@ -282,6 +279,15 @@
             entryToDelete = null;
         }
         showDeleteEntryConfirm = false;
+    }
+
+    function markedParseSimplify(plainText: string): string {
+        const parsed = (marked.parse(plainText) as string).trim();
+        console.log('markedParseSimplify - parsed', parsed);
+        if (parsed.startsWith('<p>') && parsed.endsWith('</p>')) {
+            return parsed.slice(3, -4);
+        }
+        return parsed;
     }
 </script>
 
@@ -404,16 +410,16 @@
             </div>
             <h3>Analysis Results:</h3>
             <div class="result-entry-content">
-                {@html marked.parse(entry.analysisText)}
+                {@html markedParseSimplify(entry.analysisText)}
                 <div class="followup-section" style="margin-top:8px;">
                     <input type="text" bind:value={followupQuestions[entry.timestamp]} placeholder="Enter followup question" style="width: 300px; padding: 8px; margin-right: 8px;" />
                     <button on:click={() => handleFollowupForEntry(entry.timestamp)} style="padding: 8px 12px;">Ask Followup</button>
-                    {#if chatHistories[entry.timestamp]}
+                    {#if entry.chatHistory}
                         <div class="chat-history" style="margin-top: 8px; font-size: 0.9rem; border-top: 1px solid #ccc; padding-top: 8px;">
-                            {#each chatHistories[entry.timestamp] as chat}
+                            {#each entry.chatHistory as chat}
                                 <div class="chat-message">
                                     <strong>Q:</strong> {chat.question}<br/>
-                                    <strong>A:</strong> {@html marked.parse(chat.answer)}
+                                    <strong>A:</strong> {@html markedParseSimplify(chat.answer)}
                                 </div>
                             {/each}
                         </div>
