@@ -21,8 +21,6 @@
     const customInstructions = getCustomInstructions();
     const analysisHistory = getAnalysisHistory();
     let followupQuestions: Record<number, string> = {};
-    let lastBlobLocal: Blob | null = null;
-    let lastAnalysisText = '';
 
     $: scenarioName = $scenarios.find(s => s.id === $selectedScenarioId)?.name || '';
     $: isCustomScenario = $selectedScenarioId === 'custom';
@@ -155,9 +153,6 @@
                     console.log('Analyzing image with quality', curImageQuality);
                     const data = await analyzeImageInternal(curImageQuality);
                     const noneEmptyContent = data.result_text || 'No additional information available'; 
-                    // Store the analysis with the blob directly
-                     lastBlobLocal = data.blob;
-                     lastAnalysisText = data.result_text || '';
                     await analysisHistory.addEntry(data.blob, noneEmptyContent, curImageQuality);
                     break;
                 } catch (err) {
