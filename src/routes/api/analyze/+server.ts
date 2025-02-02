@@ -42,7 +42,15 @@ export async function POST({ request }: RequestEvent) {
 
         try {
             console.log('About to analyze image');
-            const result = await imageAnalyzer.analyze(getStringFromFile(file, mimeType), language, instructions);
+            const followup = formData.get('followup')?.toString();
+            const previousAnalysis = formData.get('previousAnalysis')?.toString();
+            let result;
+            if (followup && previousAnalysis) {
+                console.log('About to analyze followup question');
+                result = await imageAnalyzer.analyzeFollowup(getStringFromFile(file, mimeType), previousAnalysis, followup, language, instructions);
+            } else {
+                result = await imageAnalyzer.analyze(getStringFromFile(file, mimeType), language, instructions);
+            }
             console.log('Image analyzed');
             return json(result);
         } catch (error) {

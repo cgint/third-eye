@@ -20,6 +20,11 @@
     const { scenarios, selectedScenarioId } = getScenarioStores();
     const customInstructions = getCustomInstructions();
     const analysisHistory = getAnalysisHistory();
+    let chatHistories: Record<number, { question: string, answer: string }[]> = {};
+    let followupQuestions: Record<number, string> = {};
+    let followupQuestion = '';
+    let lastBlobLocal: Blob | null = null;
+    let lastAnalysisText = '';
 
     $: scenarioName = $scenarios.find(s => s.id === $selectedScenarioId)?.name || '';
     $: isCustomScenario = $selectedScenarioId === 'custom';
@@ -142,7 +147,6 @@
         } as AnalysisResultWithBlob;
     }
 
-
     async function analyzeImage() {
         loading.style.display = 'block';
         hideError();
@@ -154,6 +158,8 @@
                     const data = await analyzeImageInternal(curImageQuality);
                     const noneEmptyContent = data.result_text || 'No additional information available'; 
                     // Store the analysis with the blob directly
+                     lastBlobLocal = data.blob;
+                     lastAnalysisText = data.result_text || '';
                     await analysisHistory.addEntry(data.blob, noneEmptyContent, curImageQuality);
                     break;
                 } catch (err) {
@@ -170,6 +176,103 @@
             displayError('Error analyzing image. Please try again. - ' + err);
         } finally {
             loading.style.display = 'none';
+        }
+    }
+
+    async function handleFollowup() {
+        if (!lastBlobLocal) {
+            displayError('No image available for followup.');
+            return;
+        }
+        if (!followupQuestion || followupQuestion.trim() === '') {
+            displayError('Please enter a followup question.');
+            return;
+        }
+        loading.style.display = 'block';
+        hideError();
+        const formData = new FormData();
+        formData.append('mimeType', IMAGE_MIME_TYPE);
+        formData.append('file', lastBlobLocal, `image.${IMAGE_EXTENSION}`);
+        formData.append('password', $password);
+        formData.append('language', $language);
+        formData.append('instructions', effectiveInstructions);
+        formData.append('followup', followupQuestion);
+        formData.append('previousAnalysis', lastAnalysisText);
+        try {
+            const apiResponse = await fetch('/api/analyze', {
+                method: 'POST',
+                body: formData
+            });
+            if (!apiResponse.ok) {
+                throw new Error(`HTTP error! status: ${apiResponse.status} - ${await apiResponse.text()}`);
+            }
+            const result = await apiResponse.json();
+            await analysisHistory.addEntry(lastBlobLocal, result.result_text || '', IMAGE_QUALITY_MAX);
+            lastAnalysisText = result.result_text || '';
+            followupQuestion = '';
+        } catch (err) {
+            console.error('Error asking followup:', err);
+            displayError('Error asking followup. Please try again.');
+        } finally {
+            loading.style.display = 'none';
+        }
+    }
+
+    function base64ToBlob(base64: string, mimeType: string): Blob {
+        // Remove data URL prefix if present
+        const base64Data = base64.replace(/^data:image\/\w+;base64,/, '');
+        
+        try {
+            const byteCharacters = atob(base64Data);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            return new Blob([byteArray], { type: mimeType });
+        } catch (error) {
+            console.error('Error converting base64 to blob:', error);
+            throw new Error('Invalid base64 data');
+        }
+    }
+
+    async function handleFollowupForEntry(timestamp: number) {
+        const question = followupQuestions[timestamp];
+        if (!question || question.trim() === '') {
+            displayError('Please enter a followup question.');
+            return;
+        }
+        const entry = $analysisHistory.find((e: any) => e.timestamp === timestamp);
+        if (!entry) {
+            displayError('Analysis entry not found.');
+            return;
+        }
+        const blob = base64ToBlob(entry.imageData, IMAGE_MIME_TYPE);
+        const formData = new FormData();
+        formData.append('mimeType', IMAGE_MIME_TYPE);
+        formData.append('file', blob, `image.${IMAGE_EXTENSION}`);
+        formData.append('password', $password);
+        formData.append('language', $language);
+        formData.append('instructions', effectiveInstructions);
+        formData.append('followup', question);
+        formData.append('previousAnalysis', entry.analysisText);
+        try {
+            const apiResponse = await fetch('/api/analyze', {
+                method: 'POST',
+                body: formData
+            });
+            if (!apiResponse.ok) {
+                throw new Error(`HTTP error! status: ${apiResponse.status} - ${await apiResponse.text()}`);
+            }
+            const result = await apiResponse.json();
+            if (!chatHistories[timestamp]) {
+                chatHistories[timestamp] = [];
+            }
+            chatHistories[timestamp] = [...chatHistories[timestamp], { question, answer: result.result_text || '' }];
+            followupQuestions[timestamp] = '';
+        } catch (err) {
+            console.error('Error asking followup for entry', timestamp, err);
+            displayError('Error asking followup. Please try again.');
         }
     }
 
@@ -221,6 +324,8 @@
         showDeleteEntryConfirm = false;
     }
 </script>
+
+<!-- Rest of the file remains the same as in the previous submission -->
 <div class="top-section">
     <p>Take a photo for {scenarioName}</p>
     <div class="password-input">
@@ -241,11 +346,7 @@
         >
             <track kind="captions" label="Camera feed captions" />
         </video>
-        <canvas
-            bind:this={canvas}
-            id="canvas"
-            aria-label="Captured photo"
-        ></canvas>
+        <canvas bind:this={canvas} id="canvas" aria-label="Captured photo"></canvas>
     </div>
 
     {#if isCustomScenario}
@@ -285,6 +386,10 @@
         >
             Analyze Again
         </button>
+    </div>
+    <div class="followup-section" style="margin-top:16px;">
+        <input type="text" bind:value={followupQuestion} placeholder="Enter followup question" style="width: 300px; padding: 8px; margin-right: 8px;" />
+        <button on:click={handleFollowup} style="padding: 8px 12px;">Ask Followup</button>
     </div>
 
     <div bind:this={loading} id="loading" class="loading">Analyzing</div>
@@ -344,11 +449,26 @@
             <h3>Analysis Results:</h3>
             <div class="result-entry-content">
                 {@html marked.parse(entry.analysisText)}
+                <div class="followup-section" style="margin-top:8px;">
+                    <input type="text" bind:value={followupQuestions[entry.timestamp]} placeholder="Enter followup question" style="width: 300px; padding: 8px; margin-right: 8px;" />
+                    <button on:click={() => handleFollowupForEntry(entry.timestamp)} style="padding: 8px 12px;">Ask Followup</button>
+                    {#if chatHistories[entry.timestamp]}
+                        <div class="chat-history" style="margin-top: 8px; font-size: 0.9rem; border-top: 1px solid #ccc; padding-top: 8px;">
+                            {#each chatHistories[entry.timestamp] as chat}
+                                <div class="chat-message">
+                                    <strong>Q:</strong> {chat.question}<br/>
+                                    <strong>A:</strong> {@html marked.parse(chat.answer)}
+                                </div>
+                            {/each}
+                        </div>
+                    {/if}
+                </div>
             </div>
         </div>
     {/each}
 </div>
 {/if}
+
 <style>
     :root {
         --primary-color: #6366F1;
@@ -455,11 +575,6 @@
     .history-section {
         margin-top: 2rem;
     }
-
-    /* .history-section h2 {
-        color: var(--primary-color);
-        margin-bottom: 1rem;
-    } */
 
     .clear-history {
         background-color: #ef4444;

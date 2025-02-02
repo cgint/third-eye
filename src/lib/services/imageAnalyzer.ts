@@ -42,4 +42,36 @@ export class ImageAnalyzer {
             throw new Error(`Error analyzing image: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
+
+    async analyzeFollowup(imageDataBase64: Promise<ProcessedImage>, previousAnalysis: string, followupQuestion: string, language: string, instructions: string): Promise<AnalysisResult> {
+        try {
+            const languagePrompt = language === 'de' ? 'German' : 'English';
+            const prompt = `${instructions}
+            
+Previous analysis: ${previousAnalysis}
+
+Followup question: ${followupQuestion}
+
+Please refine your answer using the above information.
+Answer in ${languagePrompt}`;
+            const processedImage = await imageDataBase64;
+            const parts: Part[] = [
+                { text: prompt },
+                {
+                    inlineData: {
+                        data: processedImage.data,
+                        mimeType: processedImage.mimeType
+                    }
+                }
+            ];
+            const result = await this.aiModel.generateContent(parts);
+            const response = result.response;
+            return await this.parseAiResponse(response.text());
+        } catch (error) {
+            if (error instanceof Error && error.message.includes('Failed to analyze image')) {
+                throw error;
+            }
+            throw new Error(`Error analyzing image followup: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }
 }
