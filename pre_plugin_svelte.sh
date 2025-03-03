@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 # Run checks
 echo "Running npm build and npm run check in parallel..."
 npm run build & BUILD_PID=$!
