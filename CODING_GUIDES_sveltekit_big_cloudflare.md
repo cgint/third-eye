@@ -193,8 +193,9 @@ This document combines best practices for developing a SvelteKit application wit
 *   Svelte components automatically update when you change variables or props.
 *   Use onMount to grab data when the component first appears.
 *   Use onDestroy to clean up, like stopping a timer.
-*   Use  with a variable to decide which part to show dynamically.
-*   Use slots to insert changing content into a fixed structure.
+*   Use with a variable to decide which part to show dynamically.
+*   SvelteKit Version 5 is the current version to use for features instead of older versions patterns
+*   DO NOT USE slots to insert changing content into a fixed structure.
 
 
 ## 18. Cloudflare Pages Deployment
