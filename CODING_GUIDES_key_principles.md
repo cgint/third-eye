@@ -23,3 +23,8 @@ These are coding guidelines best practives for svelte kit application with web f
 * Place the happy path last in the function for improved readability.
 * Implement proper error logging and user-friendly error messages.
 * Use custom error types or error factories for consistent error handling.
+
+# External libraries
+
+* When using external libraries like bootstrap we do not refer to them in their CDN version but self hosted
+* Never use Google-Fonts
