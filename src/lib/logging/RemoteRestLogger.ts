@@ -43,7 +43,8 @@ export class RemoteRestLogger implements RemoteLogger {
                 headers: {
                     'User-Agent': 'RemoteRestLogger',
                     'Content-Type': 'application/json',
-                    'ACCESS_KEY': this.password
+                    'Access-Key': this.password,
+                    'Auth': this.password
                 },
                 body: JSON.stringify({
                     log_line: message,
