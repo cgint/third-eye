@@ -51,7 +51,7 @@ export async function POST({ request }: RequestEvent) {
             } else {
                 result = await imageAnalyzer.analyze(Promise.resolve(processedImage), language, instructions);
             }
-            console.log('Image analyzed');
+            logInfo('Image analyzed. Followup:' + followup + ' Size:' + processedImage.data.length + ' bytes', JSON.stringify(result));
             return json(result);
         } catch (error) {
             logError('Error analyzing image:', JSON.stringify(error));
@@ -69,6 +69,12 @@ export async function POST({ request }: RequestEvent) {
             { status: 500 }
         );
     }
+}
+
+function logInfo(title: string, message: string) {
+    const logMessage = message.slice(0, 1000);
+    console.info(title, logMessage);
+    remote_logger.log('info', logMessage);
 }
 
 function logError(title: string, message: string) {
