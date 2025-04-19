@@ -9,6 +9,16 @@ export class NoopLogger implements RemoteLogger {
     }
 }
 
+/**
+ * POST to https://eu-logs.ai4you.app/logs
+ * with header ACCESS_KEY: 
+ * { 
+ * "log_line": "User login successful",
+ * "timestamp": "2024-04-19T14:30:00.000Z",
+ * "log_level": "info",
+ * "service_name": "auth-service"
+ * }
+ */
 export class RemoteRestLogger implements RemoteLogger {
     private readonly baseUrl: string;
     private readonly timeoutMs = 10000; // 10 seconds
@@ -28,15 +38,17 @@ export class RemoteRestLogger implements RemoteLogger {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
-            const response = await fetch(`${this.baseUrl}/logging/sender_id/${this.senderId}`, {
+            const response = await fetch(`${this.baseUrl}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'password': this.password
+                    'ACCESS_KEY': this.password
                 },
                 body: JSON.stringify({
-                    level,
-                    message
+                    log_line: message,
+                    timestamp: new Date().toISOString(),
+                    log_level: level,
+                    service_name: this.senderId
                 }),
                 signal: controller.signal
             });
