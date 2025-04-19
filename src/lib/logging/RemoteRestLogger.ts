@@ -3,8 +3,8 @@ export interface RemoteLogger {
 }
 
 export class NoopLogger implements RemoteLogger {
-    log(level: string, message: string): Promise<boolean> {
-        console.log(`NoopLogger: ${message}`);
+    async log(level: string, message: string): Promise<boolean> {
+        console.log(`NoopLogger: ${level} ${message}`);
         return Promise.resolve(true);
     }
 }

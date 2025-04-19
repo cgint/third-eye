@@ -51,19 +51,19 @@ export async function POST({ request }: RequestEvent) {
             } else {
                 result = await imageAnalyzer.analyze(Promise.resolve(processedImage), language, instructions);
             }
-            logInfo('Image analyzed. Followup:' + followup + ' Size:' + processedImage.data.length + ' bytes', JSON.stringify(result));
+            await logInfo('Image analyzed successfully.', 'Followup: ' + Boolean(followup) + ' Size: ' + processedImage.data.length + ' bytes');
             return json(result);
         } catch (error) {
-            logError('Error analyzing image:', JSON.stringify(error));
-            logStackTrace(error as Error);
+            await logError('Error analyzing image:', JSON.stringify(error));
+            await logStackTrace(error as Error);
             return new Response(
                 error instanceof Error ? error.message : 'Error analyzing image',
                 { status: 500 }
             );
         }
     } catch (err) {
-        logError('Request processing error:', JSON.stringify(err));
-        logStackTrace(err as Error);
+        await logError('Request processing error:', JSON.stringify(err));
+        await logStackTrace(err as Error);
         return new Response(
             err instanceof Error ? err.message : 'Internal server error',
             { status: 500 }
@@ -71,21 +71,21 @@ export async function POST({ request }: RequestEvent) {
     }
 }
 
-function logInfo(title: string, message: string) {
+async function logInfo(title: string, message: string) {
     const logMessage = message.slice(0, 1000);
     console.info(title, logMessage);
-    remote_logger.log('info', logMessage);
+    await remote_logger.log('info', logMessage);
 }
 
-function logError(title: string, message: string) {
+async function logError(title: string, message: string) {
     const logMessage = message.slice(0, 1000);
     console.error(title, logMessage);
-    remote_logger.log('error', logMessage);
+    await remote_logger.log('error', logMessage);
 }
 
-function logStackTrace(error: Error) {
+async function logStackTrace(error: Error) {
     const stackTrace = error.stack || 'No stack trace available';
     const logMessage = 'Stack trace: ' + stackTrace;
     console.error(logMessage);
-    remote_logger.log('error', logMessage);
+    await remote_logger.log('error', logMessage);
 }
