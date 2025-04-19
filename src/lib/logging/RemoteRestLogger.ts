@@ -41,6 +41,7 @@ export class RemoteRestLogger implements RemoteLogger {
             const response = await fetch(`${this.baseUrl}`, {
                 method: 'POST',
                 headers: {
+                    'User-Agent': 'RemoteRestLogger',
                     'Content-Type': 'application/json',
                     'ACCESS_KEY': this.password
                 },
