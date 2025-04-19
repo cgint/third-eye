@@ -74,18 +74,18 @@ export async function POST({ request }: RequestEvent) {
 async function logInfo(title: string, message: string) {
     const logMessage = message.slice(0, 1000);
     console.info(title, logMessage);
-    await remote_logger.log('info', logMessage);
+    await remote_logger.log('info', title + ' - ' + logMessage);
 }
 
 async function logError(title: string, message: string) {
     const logMessage = message.slice(0, 1000);
     console.error(title, logMessage);
-    await remote_logger.log('error', logMessage);
+    await remote_logger.log('error', title + ' - ' + logMessage);
 }
 
 async function logStackTrace(error: Error) {
     const stackTrace = error.stack || 'No stack trace available';
     const logMessage = 'Stack trace: ' + stackTrace;
     console.error(logMessage);
-    await remote_logger.log('error', logMessage);
+    await remote_logger.log('error', stackTrace);
 }
