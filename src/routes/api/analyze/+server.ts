@@ -4,6 +4,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GEMINI_API_KEY, GEMINI_MODEL_NAME, TALK_PASSWORD, remote_logger } from '$lib/constants';
 import { ImageAnalyzer } from '$lib/services/imageAnalyzer';
 import type { ProcessedImage } from '$lib/models/analysis';
+import { logInfo, logError } from '$lib/logging/logFunctions';
 
 // Initialize the Google Generative AI client
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY || '');
@@ -71,21 +72,8 @@ export async function POST({ request }: RequestEvent) {
     }
 }
 
-async function logInfo(title: string, message: string) {
-    const logMessage = message.slice(0, 1000);
-    console.info(title, logMessage);
-    await remote_logger.log('info', title + ' - ' + logMessage);
-}
-
-async function logError(title: string, message: string) {
-    const logMessage = message.slice(0, 1000);
-    console.error(title, logMessage);
-    await remote_logger.log('error', title + ' - ' + logMessage);
-}
-
 async function logStackTrace(error: Error) {
     const stackTrace = error.stack || 'No stack trace available';
     const logMessage = 'Stack trace: ' + stackTrace;
-    console.error(logMessage);
-    await remote_logger.log('error', stackTrace);
+    logError('Error analyzing image:', logMessage);
 }
