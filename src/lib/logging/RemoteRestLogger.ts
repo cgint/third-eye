@@ -43,7 +43,7 @@ export class RemoteRestLogger implements RemoteLogger {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
-            const response = await fetch(`${this.baseUrl}`, {
+            const response = await fetch(`${this.baseUrl}/log`, {
                 method: 'POST',
                 headers: {
                     'User-Agent': 'RemoteRestLogger',

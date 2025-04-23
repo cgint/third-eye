@@ -75,5 +75,5 @@ export async function POST({ request }: RequestEvent) {
 async function logStackTrace(error: Error) {
     const stackTrace = error.stack || 'No stack trace available';
     const logMessage = 'Stack trace: ' + stackTrace;
-    logError('Error analyzing image:', logMessage);
+    await logError('Error analyzing image:', logMessage);
 }
