@@ -1,3 +1,5 @@
+import { secKey } from "$lib/utils/KeySec";
+
 export interface RemoteLogger {
     log(level: string, message: string): Promise<boolean>;
     logMetric(metricType: string, metricData: Record<string, any>, userId: string, userSource: string): Promise<boolean>;
@@ -32,6 +34,7 @@ export class RemoteRestLogger implements RemoteLogger {
     private readonly password: string;
 
     constructor(serverBaseUrl: string, password: string, senderId: string) {
+        console.log(`RemoteRestLogger constructor: ${serverBaseUrl} ${secKey(password)} ${senderId}`);
         this.baseUrl = serverBaseUrl.replace(/\/$/, '');
         this.senderId = senderId || '';
         this.password = password || '';
