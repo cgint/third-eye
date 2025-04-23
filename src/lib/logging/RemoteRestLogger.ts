@@ -1,4 +1,4 @@
-import { secKey } from "$lib/utils/KeySec";
+import { secKey } from "../utils/KeySec";
 
 export interface RemoteLogger {
     log(level: string, message: string): Promise<boolean>;
@@ -42,7 +42,7 @@ export class RemoteRestLogger implements RemoteLogger {
 
     async log(level: string, message: string): Promise<boolean> {
         try {
-            console.log(`Logging message: ${message}`);
+            console.log(`Logging message: level: ${level} message: ${message}`);
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
@@ -86,7 +86,7 @@ export class RemoteRestLogger implements RemoteLogger {
 
     async logMetric(metricType: string, metricData: Record<string, any>, userId: string, userSource: string): Promise<boolean> {
         try {
-            console.log(`Logging metric: ${metricType}`);
+            console.log(`Logging metric: ${metricType} ${JSON.stringify(metricData)} ${userId} ${userSource}`);
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
