@@ -15,4 +15,4 @@ export const IMAGE_HEIGHT = import.meta.env.VITE_IMAGE_HEIGHT || 1024;
 
 export const REMOTE_LOGGER_BASE_URL: string = import.meta.env.VITE_REMOTE_LOGGER_BASE_URL;
 export const REMOTE_LOGGER_PASSWORD: string = import.meta.env.VITE_REMOTE_LOGGER_PASSWORD;
-export const remote_logger = REMOTE_LOGGER_BASE_URL != "" ? new RemoteRestLogger(REMOTE_LOGGER_BASE_URL, REMOTE_LOGGER_PASSWORD, APP_NAME) : new NoopLogger();
+export const remote_logger = REMOTE_LOGGER_BASE_URL ? new RemoteRestLogger(REMOTE_LOGGER_BASE_URL, REMOTE_LOGGER_PASSWORD, APP_NAME) : new NoopLogger();
