@@ -2,7 +2,6 @@
     import Camera from '$lib/components/Camera.svelte';
     import Consent from '$lib/components/Consent.svelte';
     import ScenarioManager from '$lib/components/ScenarioManager.svelte';
-    import InstallPrompt from '$lib/components/InstallPrompt.svelte';
     import { getCameraConsent } from '$lib/stores/consentStore';
     import { getScenarioStores } from '$lib/stores/scenarioStore';
 
@@ -114,6 +113,3 @@
     </div>
     <Camera instructions={$scenarios.find(s => s.id === $selectedScenarioId)?.instructions || ''} />
 {/if}
-
-<!-- PWA Install Prompt -->
-<InstallPrompt />
