@@ -302,6 +302,8 @@ Pump power: {power}
 
 ### Bubbling events
 
+ALWAYS USE 'onclick' instead of 'on:click'. ALWAYS use 'onclick'!
+
 Instead of doing `<button on:click>` to 'forward' the event from the element to the component, the component should accept an `onclick` callback prop:
 
 ```svelte

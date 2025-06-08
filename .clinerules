@@ -36,14 +36,17 @@ It is important to follow these guidelines when creating or adapting code:
   - In case you change existing code, adapt the specification first
 
 ## When you are done implementing:
-- Run `sh precommit.sh` to check if everything is working
+- Run `./precommit.sh` to check if everything is working
 - Fix all errors - warnings are not that important to address
-- Run `sh precommit.sh` again to check if everything is working
+- Run `./precommit.sh` again to check if everything is working
 - Repeat until everything is working
+
+## When running python code in a poetry project (poetry.lock)
+- Run `poetry run python <file>.py` to run the code
 
 
 ## When askes to fix mypy errors:
-- Fix all errors from output of 'sh pre_plugin_mypy.sh'
+- Fix all errors from output of './pre_plugin_mypy.sh'
 - Repeat multiple errors in one file at once
 - Repeat until errors are fixed
 - Use types whereever possible.
