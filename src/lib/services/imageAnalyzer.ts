@@ -78,7 +78,7 @@ Please answer the followup question using the above information.`;
             // Construct parts for multi-modal input
             const parts: Part[] = [];
             let combinedPrompt = `${instructions}\n\n`;
-            combinedPrompt += `Please compare the following products based on their images and provided previous analysis results. Provide a concise summary of key differences and similarities, especially focusing on nutritional information, allergens, and general healthiness if applicable. Ensure your answer is in ${this.getLanguagePrompt(language).replace('It is of highest importance for the user that you use the following language for your answer: ', '')}.\n\n`;
+            combinedPrompt += `Please compare the following based on their images and provided previous analysis results. Provide a concise summary of key differences and similarities. Use a table comparison format if applicable. ${this.getLanguagePrompt(language)}.\n\n`;
 
             entries.forEach((entry, index) => {
                 // Handle both single string and array of strings for imageData
