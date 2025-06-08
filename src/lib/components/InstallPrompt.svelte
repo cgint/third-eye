@@ -4,8 +4,16 @@
 	let showInstallPrompt = $state(false);
 	let deferredPrompt: any = null;
 	let isInstalled = $state(false);
+	let isMobile = $state(false);
 	
 	onMount(() => {
+		// Check if device is mobile
+		isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+				   window.innerWidth <= 768;
+		
+		// Only proceed if mobile
+		if (!isMobile) return;
+		
 		// Check if app is already installed
 		if (window.matchMedia('(display-mode: standalone)').matches) {
 			isInstalled = true;
@@ -46,20 +54,19 @@
 	}
 </script>
 
-{#if showInstallPrompt && !isInstalled}
+{#if showInstallPrompt && !isInstalled && isMobile}
 	<div class="install-prompt">
 		<div class="install-content">
-			<div class="install-icon">📱</div>
-			<div class="install-text">
-				<h3>Install Third Eye</h3>
-				<p>Get quick access to product analysis right from your home screen!</p>
+			<div class="install-info">
+				<span class="install-icon">📱</span>
+				<span class="install-text">Install Third Eye</span>
 			</div>
 			<div class="install-actions">
 				<button class="install-btn" onclick={handleInstallClick}>
-					Install App
+					Install
 				</button>
 				<button class="dismiss-btn" onclick={dismissPrompt}>
-					Not now
+					×
 				</button>
 			</div>
 		</div>
@@ -69,85 +76,95 @@
 <style>
 	.install-prompt {
 		position: fixed;
-		bottom: 16px;
-		left: 16px;
-		right: 16px;
-		background: #1a1a1a;
+		bottom: 12px;
+		left: 12px;
+		right: 12px;
+		background: rgba(0, 0, 0, 0.85);
+		backdrop-filter: blur(10px);
 		color: white;
-		border-radius: 12px;
-		padding: 16px;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		border-radius: 16px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 		z-index: 1000;
-		animation: slideUp 0.3s ease-out;
+		animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 	}
 	
 	.install-content {
 		display: flex;
 		align-items: center;
+		justify-content: space-between;
+		padding: 12px 16px;
 		gap: 12px;
 	}
 	
+	.install-info {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		flex: 1;
+	}
+	
 	.install-icon {
-		font-size: 24px;
-		flex-shrink: 0;
+		font-size: 16px;
+		line-height: 1;
 	}
 	
 	.install-text {
-		flex: 1;
-		text-align: left;
-	}
-	
-	.install-text h3 {
-		margin: 0 0 4px 0;
-		font-size: 16px;
-		font-weight: 600;
-	}
-	
-	.install-text p {
-		margin: 0;
 		font-size: 14px;
-		opacity: 0.8;
-		line-height: 1.3;
+		font-weight: 500;
+		color: white;
+		line-height: 1;
 	}
 	
 	.install-actions {
 		display: flex;
-		flex-direction: column;
+		align-items: center;
 		gap: 8px;
-		flex-shrink: 0;
 	}
 	
 	.install-btn {
-		background: #007AFF;
+		background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
 		color: white;
 		border: none;
-		border-radius: 8px;
+		border-radius: 12px;
 		padding: 8px 16px;
-		font-size: 14px;
-		font-weight: 500;
+		font-size: 13px;
+		font-weight: 600;
 		cursor: pointer;
-		min-height: 44px;
-		min-width: 80px;
+		transition: all 0.2s ease;
+		box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
 	}
 	
 	.install-btn:hover {
-		background: #0056CC;
+		transform: translateY(-1px);
+		box-shadow: 0 4px 16px rgba(0, 122, 255, 0.4);
+	}
+	
+	.install-btn:active {
+		transform: translateY(0);
 	}
 	
 	.dismiss-btn {
 		background: transparent;
-		color: #8E8E93;
-		border: 1px solid #48484A;
+		color: rgba(255, 255, 255, 0.6);
+		border: none;
 		border-radius: 8px;
-		padding: 6px 12px;
-		font-size: 12px;
+		padding: 4px;
+		font-size: 18px;
+		font-weight: 300;
 		cursor: pointer;
-		min-height: 32px;
+		transition: all 0.2s ease;
+		width: 28px;
+		height: 28px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		line-height: 1;
 	}
 	
 	.dismiss-btn:hover {
-		background: #48484A;
-		color: white;
+		background: rgba(255, 255, 255, 0.1);
+		color: rgba(255, 255, 255, 0.9);
 	}
 	
 	@keyframes slideUp {
@@ -161,22 +178,10 @@
 		}
 	}
 	
-	/* Mobile responsive */
-	@media (max-width: 480px) {
+	/* Only show on mobile viewports */
+	@media (min-width: 769px) {
 		.install-prompt {
-			left: 8px;
-			right: 8px;
-			bottom: 8px;
-		}
-		
-		.install-content {
-			flex-direction: column;
-			text-align: center;
-		}
-		
-		.install-actions {
-			flex-direction: row;
-			justify-content: center;
+			display: none;
 		}
 	}
 </style> 
