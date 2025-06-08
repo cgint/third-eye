@@ -11,8 +11,13 @@
 
     $: if (dialog) {
         if (show && !dialog.open) {
-            // Reset selection when opening
+            // Reset selection when opening and auto-select latest two entries
             selectedEntryTimestamps = new Set();
+            // Auto-select the latest two entries (first two in the array since they're ordered by timestamp descending)
+            if (historyEntries.length >= 2) {
+                selectedEntryTimestamps.add(historyEntries[0].timestamp);
+                selectedEntryTimestamps.add(historyEntries[1].timestamp);
+            }
             dialog.showModal();
         } else if (!show && dialog.open) {
             dialog.close();
