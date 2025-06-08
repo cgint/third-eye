@@ -1,28 +1,26 @@
 <script lang="ts">
-    export let show = false;
-    export let title: string;
-    export let message: string;
-    export let onConfirm: () => void;
-    export let onCancel: () => void;
+    let { show, title, message, confirm, cancel } = $props();
 
     let dialog: HTMLDialogElement;
 
-    $: if (dialog) {
-        if (show && !dialog.open) {
-            dialog.showModal();
-        } else if (!show && dialog.open) {
-            dialog.close();
+    $effect(() => {
+        if (dialog) {
+            if (show && !dialog.open) {
+                dialog.showModal();
+            } else if (!show && dialog.open) {
+                dialog.close();
+            }
         }
-    }
+    });
 
     function handleConfirm() {
+        confirm();
         dialog.close();
-        onConfirm();
     }
 
     function handleCancel() {
+        cancel();
         dialog.close();
-        onCancel();
     }
 </script>
 
@@ -38,14 +36,14 @@
         <button 
             type="button"
             class="cancel" 
-            on:click={handleCancel}
+            onclick={handleCancel}
         >
             Cancel
         </button>
         <button 
             type="button"
             class="confirm" 
-            on:click={handleConfirm}
+            onclick={handleConfirm}
         >
             Confirm
         </button>

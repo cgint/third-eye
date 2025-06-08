@@ -100,7 +100,7 @@
 {#if !$cameraConsent}
     <Consent />
 {:else if showScenarioManager}
-    <ScenarioManager on:close={() => showScenarioManager = false} />
+    <ScenarioManager close={() => showScenarioManager = false} />
 {:else}
 
     <div class="scenario-selection">
@@ -109,7 +109,7 @@
                 <option value={scenario.id}>{scenario.name}</option>
             {/each}
         </select>
-        <button on:click={() => showScenarioManager = true}>Manage Scenarios</button>
+        <button onclick={() => showScenarioManager = true}>Manage Scenarios</button>
     </div>
     <Camera instructions={$scenarios.find(s => s.id === $selectedScenarioId)?.instructions || ''} />
 {/if}

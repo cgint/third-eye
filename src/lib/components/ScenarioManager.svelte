@@ -1,12 +1,12 @@
 <script lang="ts">
     import { getScenarioStores, type Scenario } from '$lib/stores/scenarioStore';
-    import { createEventDispatcher } from 'svelte';
+
+    let { close } = $props();
 
     const { scenarios, selectedScenarioId, addScenario, updateScenario, deleteScenario } = getScenarioStores();
-    const dispatch = createEventDispatcher();
-    let editingScenario: Scenario | null = null;
-    let newScenarioName = '';
-    let newScenarioInstructions = '';
+    let editingScenario: Scenario | null = $state(null);
+    let newScenarioName = $state('');
+    let newScenarioInstructions = $state('');
 
     function handleSave() {
         if (editingScenario) {
@@ -38,14 +38,14 @@
     }
 
     function closeManager() {
-        dispatch('close');
+        close();
     }
 </script>
 
 <div class="scenario-manager">
     <div class="header">
         <h2>Manage Scenarios</h2>
-        <button class="close-button" on:click={closeManager}>×</button>
+        <button class="close-button" onclick={closeManager}>×</button>
     </div>
 
     <div class="scenarios-list">
@@ -58,8 +58,8 @@
                 </div>
                 {#if scenario.isEditable}
                     <div class="actions">
-                        <button on:click={() => startEdit(scenario)}>Edit</button>
-                        <button class="delete" on:click={() => handleDelete(scenario.id)}>Delete</button>
+                        <button onclick={() => startEdit(scenario)}>Edit</button>
+                        <button class="delete" onclick={() => handleDelete(scenario.id)}>Delete</button>
                     </div>
                 {/if}
                 </div>
@@ -79,11 +79,11 @@
                 <textarea bind:value={newScenarioInstructions} placeholder="Enter instructions for the AI" rows="4"></textarea>
             </label>
             <div class="button-group">
-                <button on:click={handleSave} disabled={!newScenarioName || !newScenarioInstructions}>
+                <button onclick={handleSave} disabled={!newScenarioName || !newScenarioInstructions}>
                     {editingScenario ? 'Save Changes' : 'Add Scenario'}
                 </button>
                 {#if editingScenario}
-                    <button on:click={cancelEdit}>Cancel</button>
+                    <button onclick={cancelEdit}>Cancel</button>
                 {/if}
             </div>
         </div>

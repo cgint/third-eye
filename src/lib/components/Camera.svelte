@@ -13,7 +13,7 @@
     import CompareDialog from './CompareDialog.svelte';
     import type { AnalysisResult } from '$lib/models/analysis';
     
-    export let instructions: string;
+    let { instructions } = $props();
 
     const password = getPasswordStore();
     const language = getLanguageStore();
@@ -21,12 +21,12 @@
     const { scenarios, selectedScenarioId } = getScenarioStores();
     const customInstructions = getCustomInstructions();
     const analysisHistory = getAnalysisHistory();
-    let followupQuestions: Record<number, string> = {};
-    let isFollowupLoading: Record<number, boolean> = {};
+    let followupQuestions: Record<number, string> = $state({});
+    let isFollowupLoading: Record<number, boolean> = $state({});
 
-    $: scenarioName = $scenarios.find(s => s.id === $selectedScenarioId)?.name || '';
-    $: isCustomScenario = $selectedScenarioId === 'custom';
-    $: effectiveInstructions = isCustomScenario ? $customInstructions : instructions;
+    const scenarioName = $derived($scenarios.find(s => s.id === $selectedScenarioId)?.name || '');
+    const isCustomScenario = $derived($selectedScenarioId === 'custom');
+    const effectiveInstructions = $derived(isCustomScenario ? $customInstructions : instructions);
 
     let video: HTMLVideoElement;
     let canvas: HTMLCanvasElement;
@@ -37,11 +37,11 @@
     let error: HTMLDivElement;
     let stream: MediaStream | null = null;
 
-    let showDeleteHistoryConfirm = false;
-    let showDeleteEntryConfirm = false;
-    let entryToDelete: number | null = null;
-    let showRevokeConsentConfirm = false;
-    let showCompareDialog = false;
+    let showDeleteHistoryConfirm = $state(false);
+    let showDeleteEntryConfirm = $state(false);
+    let entryToDelete: number | null = $state(null);
+    let showRevokeConsentConfirm = $state(false);
+    let showCompareDialog = $state(false);
 
     // Configure marked to allow HTML in markdown
     marked.setOptions({
@@ -214,8 +214,7 @@
         }
     }
 
-    async function handleComparisonConfirmed(event: CustomEvent<AnalysisEntry[]>) {
-        const entriesToCompare = event.detail;
+    async function handleComparisonConfirmed(entriesToCompare: AnalysisEntry[]) {
         if (entriesToCompare.length < 2) {
             displayError('Please select at least two entries for comparison.');
             return;
@@ -328,7 +327,7 @@
     <p>Take a photo for {scenarioName}</p>
     <div class="password-input">
         Password: <input type="password" bind:value={$password} />
-        <button on:click={revokeConsent} title="Revoke camera access and local storage consent" style="width: 24px; height: 24px; padding: 0; font-size: 12px;">&#x26A0;</button>
+        <button onclick={revokeConsent} title="Revoke camera access and local storage consent" style="width: 24px; height: 24px; padding: 0; font-size: 12px;">&#x26A0;</button>
         Answer: <select bind:value={$language}>
             <option value="en">English</option>
             <option value="de">Deutsch</option>
@@ -363,7 +362,7 @@
         <button 
             bind:this={captureBtn} 
             id="captureBtn" 
-            on:click={handleCapture}
+            onclick={handleCapture}
             disabled
         >
             Take Photo and Analyze
@@ -371,7 +370,7 @@
         <button 
             bind:this={retakeBtn} 
             id="retakeBtn" 
-            on:click={handleRetake}
+            onclick={handleRetake}
             style="display: none;"
         >
             Retake Photo
@@ -379,7 +378,7 @@
         <button
             bind:this={analyzeBtn}
             id="analyzeBtn"
-            on:click={analyzeImage}
+            onclick={analyzeImage}
             style="display: none;"
         >
             Analyze Again
@@ -394,24 +393,24 @@
     show={showRevokeConsentConfirm}
     title="Revoke Consent"
     message="Are you sure you want to revoke camera access and clear all local data? This action cannot be undone."
-    onConfirm={confirmRevokeConsent}
-    onCancel={() => showRevokeConsentConfirm = false}
+    confirm={confirmRevokeConsent}
+    cancel={() => showRevokeConsentConfirm = false}
 />
 
 <ConfirmDialog
     show={showDeleteHistoryConfirm}
     title="Delete All History"
     message="Are you sure you want to delete all analysis history? This action cannot be undone."
-    onConfirm={confirmDeleteHistory}
-    onCancel={() => showDeleteHistoryConfirm = false}
+    confirm={confirmDeleteHistory}
+    cancel={() => showDeleteHistoryConfirm = false}
 />
 
 <ConfirmDialog
     show={showDeleteEntryConfirm}
     title="Delete Entry"
     message="Are you sure you want to delete this analysis entry? This action cannot be undone."
-    onConfirm={confirmDeleteEntry}
-    onCancel={() => {
+    confirm={confirmDeleteEntry}
+    cancel={() => {
         showDeleteEntryConfirm = false;
         entryToDelete = null;
     }}
@@ -420,8 +419,8 @@
 <CompareDialog
     show={showCompareDialog}
     historyEntries={$analysisHistory.filter(entry => !Array.isArray(entry.imageData))}
-    on:confirm={handleComparisonConfirmed}
-    on:cancel={() => showCompareDialog = false}
+    confirm={handleComparisonConfirmed}
+    cancel={() => showCompareDialog = false}
 />
 
 {#if $analysisHistory.length > 0}
@@ -431,14 +430,14 @@
         <div class="history-buttons">
             {#if $analysisHistory.filter(entry => !Array.isArray(entry.imageData)).length >= 2}
             <button
-                on:click={() => showCompareDialog = true}
+                onclick={() => showCompareDialog = true}
                 title="Compare selected analysis entries"
                 class="compare-btn"
             >
                 Compare
             </button>
             {/if}
-            <button class="clear-history" on:click={handleDeleteHistory}>Delete All</button>
+            <button class="clear-history" onclick={handleDeleteHistory}>Delete All</button>
         </div>
     </div>
     
@@ -453,7 +452,7 @@
                 </div>
                 <button 
                     class="delete-entry" 
-                    on:click={() => handleDeleteEntry(entry.timestamp)}
+                    onclick={() => handleDeleteEntry(entry.timestamp)}
                     title="Delete this entry"
                 >
                     Delete
@@ -478,7 +477,7 @@
                 <div class="followup-section">
                     <div class="followup-input">
                         <input type="text" bind:value={followupQuestions[entry.timestamp]} placeholder="Enter followup question" 
-                            on:keydown={(e) => {
+                            onkeydown={(e) => {
                                 if (e.key === 'Enter') {
                                     handleFollowupForEntry(entry.timestamp);
                                 }
@@ -487,7 +486,7 @@
                         {#if isFollowupLoading[entry.timestamp]}
                             <div class="loading" style="display: inline-block; margin: 0;">Answering</div>
                         {:else}
-                            <button on:click={() => handleFollowupForEntry(entry.timestamp)}>Ask Followup</button>
+                            <button onclick={() => handleFollowupForEntry(entry.timestamp)}>Ask Followup</button>
                         {/if}
                     </div>
                     {#if entry.chatHistory && entry.chatHistory.length > 0}

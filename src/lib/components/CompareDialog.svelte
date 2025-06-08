@@ -1,28 +1,27 @@
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte';
     import type { AnalysisEntry } from '$lib/stores/analysisHistoryStore';
 
-    export let show = false;
-    export let historyEntries: AnalysisEntry[] = [];
+    let { show, historyEntries, confirm, cancel } = $props();
 
     let dialog: HTMLDialogElement;
-    let selectedEntryTimestamps: Set<number> = new Set();
-    const dispatch = createEventDispatcher();
+    let selectedEntryTimestamps: Set<number> = $state(new Set());
 
-    $: if (dialog) {
-        if (show && !dialog.open) {
-            // Reset selection when opening and auto-select latest two entries
-            selectedEntryTimestamps = new Set();
-            // Auto-select the latest two entries (first two in the array since they're ordered by timestamp descending)
-            if (historyEntries.length >= 2) {
-                selectedEntryTimestamps.add(historyEntries[0].timestamp);
-                selectedEntryTimestamps.add(historyEntries[1].timestamp);
+    $effect(() => {
+        if (dialog) {
+            if (show && !dialog.open) {
+                // Reset selection when opening and auto-select latest two entries
+                selectedEntryTimestamps = new Set();
+                // Auto-select the latest two entries (first two in the array since they're ordered by timestamp descending)
+                if (historyEntries.length >= 2) {
+                    selectedEntryTimestamps.add(historyEntries[0].timestamp);
+                    selectedEntryTimestamps.add(historyEntries[1].timestamp);
+                }
+                dialog.showModal();
+            } else if (!show && dialog.open) {
+                dialog.close();
             }
-            dialog.showModal();
-        } else if (!show && dialog.open) {
-            dialog.close();
         }
-    }
+    });
 
     function toggleSelection(timestamp: number) {
         if (selectedEntryTimestamps.has(timestamp)) {
@@ -34,15 +33,15 @@
     }
 
     function handleConfirm() {
-        const selectedEntries = historyEntries.filter(entry =>
+        const selectedEntries = historyEntries.filter((entry: AnalysisEntry) =>
             selectedEntryTimestamps.has(entry.timestamp)
         );
-        dispatch('confirm', selectedEntries);
+        confirm(selectedEntries);
         dialog.close();
     }
 
     function handleCancel() {
-        dispatch('cancel');
+        cancel();
         dialog.close();
     }
 </script>
@@ -61,7 +60,7 @@
             <label class="entry-card" class:selected={selectedEntryTimestamps.has(entry.timestamp)}>
                 <input
                     type="checkbox"
-                    on:change={() => toggleSelection(entry.timestamp)}
+                    onchange={() => toggleSelection(entry.timestamp)}
                     checked={selectedEntryTimestamps.has(entry.timestamp)}
                 />
                 <img src={Array.isArray(entry.imageData) ? entry.imageData[0] : entry.imageData} alt="Analysis {new Date(entry.timestamp).toLocaleDateString()}" />
@@ -74,14 +73,14 @@
         <button
             type="button"
             class="cancel"
-            on:click={handleCancel}
+            onclick={handleCancel}
         >
             Cancel
         </button>
         <button
             type="button"
             class="confirm"
-            on:click={handleConfirm}
+            onclick={handleConfirm}
             disabled={selectedEntryTimestamps.size < 2}
         >
             Compare ({selectedEntryTimestamps.size})

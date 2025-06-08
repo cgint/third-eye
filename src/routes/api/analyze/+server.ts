@@ -4,7 +4,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GEMINI_API_KEY, GEMINI_MODEL_NAME, TALK_PASSWORD, remote_logger } from '$lib/constants';
 import { ImageAnalyzer } from '$lib/services/imageAnalyzer';
 import type { ProcessedImage } from '$lib/models/analysis';
-import { logInfo, logError } from '$lib/logging/logFunctions';
+import { logInfo, logError, logStackTrace } from '$lib/logging/logFunctions';
 
 // Initialize the Google Generative AI client
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY || '');
@@ -56,7 +56,7 @@ export async function POST({ request }: RequestEvent) {
             return json(result);
         } catch (error) {
             await logError('Error analyzing image:', JSON.stringify(error));
-            await logStackTrace(error as Error);
+            await logStackTrace(error as Error, 'Error analyzing image:');
             return new Response(
                 error instanceof Error ? error.message : 'Error analyzing image',
                 { status: 500 }
@@ -64,16 +64,10 @@ export async function POST({ request }: RequestEvent) {
         }
     } catch (err) {
         await logError('Request processing error:', JSON.stringify(err));
-        await logStackTrace(err as Error);
+        await logStackTrace(err as Error, 'Request processing error:');
         return new Response(
             err instanceof Error ? err.message : 'Internal server error',
             { status: 500 }
         );
     }
-}
-
-async function logStackTrace(error: Error) {
-    const stackTrace = error.stack || 'No stack trace available';
-    const logMessage = 'Stack trace: ' + stackTrace;
-    await logError('Error analyzing image:', logMessage);
 }

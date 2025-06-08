@@ -3,7 +3,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GEMINI_API_KEY, GEMINI_MODEL_NAME, TALK_PASSWORD } from '$lib/constants';
 import { ImageAnalyzer } from '$lib/services/imageAnalyzer';
-import { logInfo, logError } from '$lib/logging/logFunctions';
+import { logInfo, logError, logStackTrace } from '$lib/logging/logFunctions';
 import type { AnalysisEntry } from '$lib/stores/analysisHistoryStore';
 
 // Initialize the Google Generative AI client
@@ -43,7 +43,7 @@ export async function POST({ request }: RequestEvent) {
             return json(result);
         } catch (error) {
             await logError('Error analyzing comparison:', JSON.stringify(error));
-            await logStackTrace(error as Error);
+            await logStackTrace(error as Error, 'Comparison Error:');
             return new Response(
                 error instanceof Error ? error.message : 'Error analyzing comparison',
                 { status: 500 }
@@ -51,16 +51,10 @@ export async function POST({ request }: RequestEvent) {
         }
     } catch (err) {
         await logError('Comparison request processing error:', JSON.stringify(err));
-        await logStackTrace(err as Error);
+        await logStackTrace(err as Error, 'Comparison Error:');
         return new Response(
             err instanceof Error ? err.message : 'Internal server error',
             { status: 500 }
         );
     }
-}
-
-async function logStackTrace(error: Error) {
-    const stackTrace = error.stack || 'No stack trace available';
-    const logMessage = 'Stack trace: ' + stackTrace;
-    await logError('Comparison Error:', logMessage);
 } 
