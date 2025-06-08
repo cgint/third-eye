@@ -64,4 +64,40 @@ Please answer the followup question using the above information.`;
             throw new Error(`Error analyzing image followup: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
+
+    async analyzeComparison(
+        entries: { imageData: string; analysisText: string; }[],
+        language: string,
+        instructions: string
+    ): Promise<AnalysisResult> {
+        try {
+            if (entries.length < 2) {
+                throw new Error('At least two entries are required for comparison.');
+            }
+
+            // Construct parts for multi-modal input
+            const parts: Part[] = [];
+            let combinedPrompt = `${instructions}\n\n`;
+            combinedPrompt += `Please compare the following products based on their images and provided previous analysis results. Provide a concise summary of key differences and similarities, especially focusing on nutritional information, allergens, and general healthiness if applicable. Ensure your answer is in ${this.getLanguagePrompt(language).replace('It is of highest importance for the user that you use the following language for your answer: ', '')}.\n\n`;
+
+            entries.forEach((entry, index) => {
+                const mimeType = entry.imageData.split(',')[0].split(':')[1].split(';')[0]; // Extract mimeType from data URL
+                const data = entry.imageData.split(',')[1]; // Extract base64 data
+                parts.push({ text: `Product ${index + 1} (Image ${index + 1}):\nPrevious Analysis: ${entry.analysisText}\n\n` });
+                parts.push({ inlineData: { data: data, mimeType: mimeType } });
+            });
+
+            // Prepend the main prompt as the first part
+            parts.unshift({ text: combinedPrompt });
+
+            const result = await this.aiModel.generateContent(parts);
+            const response = result.response;
+            return await this.parseAiResponse(response.text());
+        } catch (error) {
+            if (error instanceof Error && error.message.includes('Failed to analyze image')) {
+                throw error;
+            }
+            throw new Error(`Error analyzing comparison: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }
 }

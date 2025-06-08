@@ -7,9 +7,10 @@
     import { IMAGE_MIME_TYPE, IMAGE_EXTENSION, IMAGE_QUALITY_MAX, IMAGE_WIDTH, IMAGE_HEIGHT } from '$lib/constants';
     import { getScenarioStores } from '$lib/stores/scenarioStore';
     import { getCustomInstructions } from '$lib/stores/customInstructionsStore';
-    import { getAnalysisHistory } from '$lib/stores/analysisHistoryStore';
+    import { getAnalysisHistory, type AnalysisEntry } from '$lib/stores/analysisHistoryStore';
     import { clearAllStores } from '$lib/stores/allStoresRemover';
     import ConfirmDialog from './ConfirmDialog.svelte';
+    import CompareDialog from './CompareDialog.svelte';
     import type { AnalysisResult } from '$lib/models/analysis';
     
     export let instructions: string;
@@ -40,6 +41,7 @@
     let showDeleteEntryConfirm = false;
     let entryToDelete: number | null = null;
     let showRevokeConsentConfirm = false;
+    let showCompareDialog = false;
 
     // Configure marked to allow HTML in markdown
     marked.setOptions({
@@ -212,6 +214,57 @@
         }
     }
 
+    async function handleComparisonConfirmed(event: CustomEvent<AnalysisEntry[]>) {
+        const entriesToCompare = event.detail;
+        if (entriesToCompare.length < 2) {
+            displayError('Please select at least two entries for comparison.');
+            return;
+        }
+
+        loading.style.display = 'block';
+        hideError();
+        showCompareDialog = false;
+        
+        try {
+            const apiResponse = await fetch('/api/compare', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    entriesToCompare, 
+                    password: $password, 
+                    language: $language, 
+                    instructions: effectiveInstructions 
+                })
+            });
+            
+            if (!apiResponse.ok) {
+                throw new Error(`HTTP error! status: ${apiResponse.status} - ${await apiResponse.text()}`);
+            }
+            
+            const result = await apiResponse.json() as AnalysisResult;
+            
+            // Add comparison result to history with copies of all compared images
+            const comparedImages: string[] = [];
+            entriesToCompare.forEach(entry => {
+                if (Array.isArray(entry.imageData)) {
+                    comparedImages.push(...entry.imageData);
+                } else {
+                    comparedImages.push(entry.imageData);
+                }
+            });
+            await analysisHistory.addEntry(
+                comparedImages, // Array of all images from compared entries
+                'Comparison: ' + result.result_text, 
+                null
+            );
+        } catch (err) { 
+            displayError('Error comparing images: ' + err); 
+            console.error(err); 
+        } finally { 
+            loading.style.display = 'none'; 
+        }
+    }
+
     async function handleCapture() {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -364,17 +417,40 @@
     }}
 />
 
+<CompareDialog
+    show={showCompareDialog}
+    historyEntries={$analysisHistory.filter(entry => !Array.isArray(entry.imageData))}
+    on:confirm={handleComparisonConfirmed}
+    on:cancel={() => showCompareDialog = false}
+/>
+
 {#if $analysisHistory.length > 0}
 <div class="history-section">
     <div class="history-header">
         <div class="history-title">History<span class="history-subtitle">(Stored in your browser)</span></div>
-        <button class="clear-history" on:click={handleDeleteHistory}>Delete All</button>
+        <div class="history-buttons">
+            {#if $analysisHistory.filter(entry => !Array.isArray(entry.imageData)).length >= 2}
+            <button
+                on:click={() => showCompareDialog = true}
+                title="Compare selected analysis entries"
+                class="compare-btn"
+            >
+                Compare
+            </button>
+            {/if}
+            <button class="clear-history" on:click={handleDeleteHistory}>Delete All</button>
+        </div>
     </div>
     
     {#each $analysisHistory as entry}
-        <div class="result-entry">
+        <div class="result-entry" class:comparison-entry={Array.isArray(entry.imageData)}>
             <div class="entry-header">
-                <div class="timestamp">{new Date(entry.timestamp).toLocaleString()}{entry.curImageQuality ? " (Q=" + entry.curImageQuality + ")" : ''}</div>
+                <div class="timestamp">
+                    {#if Array.isArray(entry.imageData)}
+                        <span class="entry-type-badge">Comparison</span>
+                    {/if}
+                    {new Date(entry.timestamp).toLocaleString()}{entry.curImageQuality ? " (Q=" + entry.curImageQuality + ")" : ''}
+                </div>
                 <button 
                     class="delete-entry" 
                     on:click={() => handleDeleteEntry(entry.timestamp)}
@@ -384,8 +460,17 @@
                 </button>
             </div>
             <div class="result-entry-image">
-                <!-- svelte-ignore a11y_img_redundant_alt -->
-                <img src={entry.imageData} alt="Analyzed image" />
+                {#if Array.isArray(entry.imageData)}
+                    <!-- Multiple images for comparison entries -->
+                    <div class="comparison-images">
+                        {#each entry.imageData as imageData, index}
+                            <img src={imageData} alt="Comparison image {index + 1}" class="comparison-img" />
+                        {/each}
+                    </div>
+                {:else}
+                    <!-- Single image for regular entries -->
+                    <img src={entry.imageData} alt="Analyzed image" />
+                {/if}
             </div>
             <h3>Analysis Results:</h3>
             <div class="result-entry-content">
@@ -531,6 +616,17 @@
                     0 6px 16px -5px rgba(0, 0, 0, 0.06);
     }
 
+    .result-entry.comparison-entry {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border-left: 4px solid #0ea5e9;
+        border-color: #0ea5e9;
+    }
+
+    .result-entry.comparison-entry:hover {
+        box-shadow: 0 14px 24px -5px rgba(14, 165, 233, 0.15), 
+                    0 6px 16px -5px rgba(14, 165, 233, 0.08);
+    }
+
     .result-entry .result-entry-image {
         text-align: center;
         margin-bottom: 1rem;
@@ -550,6 +646,20 @@
         color: #666;
         font-size: 0.875rem;
         margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .entry-type-badge {
+        background-color: #0ea5e9;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
     .history-section {
@@ -658,5 +768,43 @@
         font-size: 0.666rem;
         color: #666;
         font-style: italic;
+    }
+
+    .history-buttons {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .compare-btn {
+        background-color: var(--primary-color);
+        color: white;
+        font-size: 0.9rem;
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .compare-btn:hover {
+        background-color: var(--primary-hover);
+    }
+
+    .comparison-images {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        max-width: 320px;
+        margin: 0 auto;
+    }
+
+    .comparison-img {
+        width: 100%;
+        height: auto;
+        max-height: 150px;
+        object-fit: contain;
+        border: 1px solid #ccc;
+        border-radius: 4px;
     }
 </style>

@@ -2,7 +2,7 @@ import { browser } from '$app/environment';
 import { writable, type Writable } from 'svelte/store';
 
 export interface AnalysisEntry {
-    imageData: string; // base64 string
+    imageData: string | string[]; // base64 string or array for comparison entries
     analysisText: string;
     timestamp: number;
     curImageQuality: number | null;
@@ -11,7 +11,7 @@ export interface AnalysisEntry {
 
 interface AnalysisHistoryStore {
     subscribe: Writable<AnalysisEntry[]>['subscribe'];
-    addEntry: (base64ImageData: string, analysisText: string, curImageQuality: number) => void;
+    addEntry: (base64ImageData: string | string[], analysisText: string, curImageQuality: number | null) => void;
     deleteEntry: (timestamp: number) => void;
     clear: () => void;
     updateEntry: (entry: AnalysisEntry) => void;
@@ -30,8 +30,8 @@ export const getAnalysisHistory = () => {
 
         analysisHistoryStore = {
             subscribe,
-            addEntry: (base64ImageData: string, analysisText: string, curImageQuality: number) => {
-                console.log('addEntry - base64ImageData - size', base64ImageData.length);
+            addEntry: (base64ImageData: string | string[], analysisText: string, curImageQuality: number | null) => {
+                console.log('addEntry - base64ImageData - size', Array.isArray(base64ImageData) ? base64ImageData.length + ' images' : base64ImageData.length + ' bytes');
 
                 update(entries => {
                     const newEntries = [{
