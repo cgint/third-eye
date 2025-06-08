@@ -4,6 +4,14 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		
+		<!-- PWA Essential Meta Tags -->
+		<meta name="theme-color" content="#1a1a1a" />
+		<meta name="mobile-web-app-capable" content="yes">
+		<meta name="mobile-web-app-status-bar-style" content="black-translucent" />
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+		<meta name="apple-mobile-web-app-title" content="Third Eye">
+		
 		<!-- Basic SEO Meta Tags -->
 		<title>Third Eye - Smart Product Analysis</title>
 		<meta name="description" content="Analyze products instantly with your camera. Get nutritional information, allergen alerts, and health insights for food products and more." />
@@ -12,7 +20,7 @@
 		<!-- Open Graph Meta Tags for Social Media -->
 		<meta property="og:title" content="Third Eye - Smart Product Analysis" />
 		<meta property="og:description" content="Analyze products instantly with your camera. Get nutritional information, allergen alerts, and health insights for food products and more." />
-		<meta property="og:image" content="%sveltekit.assets%/favicon_dall-e.png" />
+		<meta property="og:image" content="%sveltekit.assets%/icon-512x512.png" />
 		<meta property="og:url" content="https://third-eye.ai4you.app" />
 		<meta property="og:type" content="website" />
 		<meta property="og:site_name" content="Third Eye" />
@@ -21,15 +29,45 @@
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:title" content="Third Eye - Smart Product Analysis" />
 		<meta name="twitter:description" content="Analyze products instantly with your camera. Get nutritional information, allergen alerts, and health insights." />
-		<meta name="twitter:image" content="%sveltekit.assets%/favicon_dall-e.png" />
+		<meta name="twitter:image" content="%sveltekit.assets%/icon-512x512.png" />
 		
 		<!-- Additional Meta Tags -->
 		<meta name="robots" content="index, follow" />
 		<meta name="author" content="Third Eye" />
 		
+		<!-- PWA Manifest and Icons -->
+		<link rel="manifest" href="%sveltekit.assets%/manifest.json" />
 		<link rel="icon" href="%sveltekit.assets%/favicon_dall-e.png" />
+		<link rel="apple-touch-icon" href="%sveltekit.assets%/icon-192x192.png" />
+		<link rel="apple-touch-icon" sizes="192x192" href="%sveltekit.assets%/icon-192x192.png" />
+		<link rel="apple-touch-icon" sizes="512x512" href="%sveltekit.assets%/icon-512x512.png" />
 		%sveltekit.head%
+		
+		<!-- Service Worker Registration -->
+		<script>
+			if ('serviceWorker' in navigator) {
+				window.addEventListener('load', () => {
+					navigator.serviceWorker.register('/sw.js')
+						.then(registration => {
+							console.log('[App] Service Worker registered successfully:', registration.scope);
+						})
+						.catch(error => {
+							console.log('[App] Service Worker registration failed:', error);
+						});
+				});
+			}
+		</script>
+		
 		<style>
+			/* Ensure full viewport usage */
+			html, body {
+				margin: 0;
+				padding: 0;
+				height: 100%;
+				overflow-x: hidden;
+			}
+			
+			/* Prevent text size adjustment on mobile */
 			body {
 				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 				margin: 0 auto;
@@ -41,11 +79,33 @@
 				color: var(--text-color);
 				line-height: 1.6;
 				height: 100vh;
+				-webkit-text-size-adjust: 100%;
+				-ms-text-size-adjust: 100%;
 			}
+			
 			.content-container {
 				max-width: 600px;
 				margin: 0 auto;
 				padding: 0;
+				/* Safe area padding for notched devices */
+				padding-top: env(safe-area-inset-top);
+				padding-bottom: env(safe-area-inset-bottom);
+				padding-left: max(8px, env(safe-area-inset-left));
+				padding-right: max(8px, env(safe-area-inset-right));
+			}
+			
+			/* Touch-friendly button sizes */
+			button, .btn {
+				min-height: 44px;
+				min-width: 44px;
+				touch-action: manipulation;
+			}
+			
+			/* PWA splash screen background */
+			@media (display-mode: standalone) {
+				body {
+					background-color: #1a1a1a;
+				}
 			}
 		</style>
 	</head>
