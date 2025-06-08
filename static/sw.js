@@ -1,33 +1,27 @@
-// Development service worker that unregisters itself
-self.addEventListener('install', event => {
-  console.log('Service worker installed');
-  self.skipWaiting();
-});
+const CACHE_NAME = 'third-eye-v1';
+const urlsToCache = [
+  '/',
+  '/manifest.json',
+  '/icon-192x192.png',
+  '/icon-512x512.png',
+  '/favicon_dall-e.png'
+];
 
-self.addEventListener('activate', event => {
-  console.log('Service worker activated');
-  
-  // Unregister this service worker in development
-  self.registration.unregister()
-    .then(() => {
-      console.log('Service worker unregistered successfully');
-    })
-    .catch(error => {
-      console.error('Error unregistering service worker:', error);
-    });
-    
-  // Clear any caches
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          return caches.delete(cacheName);
-        })
-      );
-    })
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        return cache.addAll(urlsToCache);
+      })
   );
 });
 
 self.addEventListener('fetch', event => {
-  // Let browser handle requests normally in development
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // Return cached version or fetch from network
+        return response || fetch(event.request);
+      })
+  );
 }); 
