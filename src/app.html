@@ -45,23 +45,47 @@
 		<link rel="apple-touch-icon" sizes="512x512" href="%sveltekit.assets%/icon-512x512.png" />
 		%sveltekit.head%
 		
-		<!-- Service Worker Registration -->
+		<!-- Service Worker Registration and PWA Background Fix -->
 		<script>
+			// Force immediate background color for PWA
+			document.documentElement.style.backgroundColor = '#F8FAFC';
+			document.body.style.backgroundColor = '#F8FAFC';
+			
 			if ('serviceWorker' in navigator) {
 				window.addEventListener('load', () => {
 					navigator.serviceWorker.register('/sw.js')
 						.then(registration => {
 							console.log('[App] Service Worker registered successfully:', registration.scope);
+							
+							// Check for updates more frequently in PWA mode
+							if (window.matchMedia('(display-mode: standalone)').matches) {
+								registration.addEventListener('updatefound', () => {
+									console.log('[App] New service worker found, updating...');
+									const newWorker = registration.installing;
+									newWorker.addEventListener('statechange', () => {
+										if (newWorker.state === 'activated') {
+											console.log('[App] New service worker activated, reloading...');
+											window.location.reload();
+										}
+									});
+								});
+							}
 						})
 						.catch(error => {
 							console.log('[App] Service Worker registration failed:', error);
 						});
 				});
+				
+				// Listen for service worker updates
+				navigator.serviceWorker.addEventListener('controllerchange', () => {
+					console.log('[App] Service worker controller changed, reloading...');
+					window.location.reload();
+				});
 			}
 		</script>
 		
 		<style>
-			/* Global CSS Variables */
+			/* Global CSS Variables with immediate fallbacks */
 			:root {
 				--primary-color: #6366F1;
 				--primary-hover: #4F46E5;
@@ -70,24 +94,28 @@
 				--border-color: #E2E8F0;
 			}
 			
-			/* Ensure full viewport usage */
-			html, body {
+			/* Critical: Set explicit background immediately to prevent black background */
+			html {
+				background-color: #F8FAFC !important;
+				color: #1F2937 !important;
 				margin: 0;
 				padding: 0;
 				height: 100%;
 				overflow-x: hidden;
 			}
 			
-			/* Prevent text size adjustment on mobile */
+			/* Ensure full viewport usage */
 			body {
-				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-				margin: 0 auto;
+				margin: 0;
 				padding: 0;
+				height: 100%;
+				overflow-x: hidden;
+				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 				padding-left: 8px;
 				padding-right: 8px;
 				text-align: center;
-				background-color: var(--background-color);
-				color: var(--text-color);
+				background-color: #F8FAFC !important;
+				color: #1F2937 !important;
 				line-height: 1.6;
 				height: 100vh;
 				-webkit-text-size-adjust: 100%;
@@ -98,6 +126,7 @@
 				max-width: 600px;
 				margin: 0 auto;
 				padding: 0;
+				background-color: inherit;
 				/* Safe area padding for notched devices */
 				padding-top: env(safe-area-inset-top);
 				padding-bottom: env(safe-area-inset-bottom);
@@ -112,18 +141,25 @@
 				touch-action: manipulation;
 			}
 			
-			/* PWA splash screen background and standalone mode fixes */
+			/* PWA standalone mode specific styles */
 			@media (display-mode: standalone) {
 				html, body {
-					background-color: var(--background-color, #F8FAFC);
-					color: var(--text-color, #1F2937);
+					background-color: #F8FAFC !important;
+					color: #1F2937 !important;
+				}
+				
+				/* Ensure content container also has correct background */
+				.content-container, main {
+					background-color: #F8FAFC !important;
 				}
 			}
 			
-			/* Fallback for browsers that don't support CSS variables */
-			html {
-				background-color: #F8FAFC;
-				color: #1F2937;
+			/* Mobile browser specific fixes */
+			@media screen and (max-width: 768px) {
+				html, body {
+					background-color: #F8FAFC !important;
+					color: #1F2937 !important;
+				}
 			}
 		</style>
 	</head>
