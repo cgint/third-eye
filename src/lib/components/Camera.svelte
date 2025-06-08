@@ -469,7 +469,7 @@
                     </div>
                 {:else}
                     <!-- Single image for regular entries -->
-                    <img src={entry.imageData} alt="Analyzed image" />
+                    <img src={entry.imageData} alt="This is the analyzed source" />
                 {/if}
             </div>
             <h3>Analysis Results:</h3>
