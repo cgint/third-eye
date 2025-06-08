@@ -2,6 +2,11 @@
     let { show, title, message, confirm, cancel } = $props();
 
     let dialog: HTMLDialogElement;
+    
+    // Create unique IDs to avoid ARIA duplicate ID issues
+    const dialogId = `dialog-${title.replace(/\s+/g, '-').toLowerCase()}`;
+    const titleId = `${dialogId}-title`;
+    const messageId = `${dialogId}-message`;
 
     $effect(() => {
         if (dialog) {
@@ -27,11 +32,11 @@
 <dialog
     bind:this={dialog}
     class="modal-content"
-    aria-labelledby="dialog-title"
-    aria-describedby="dialog-message"
+    aria-labelledby={titleId}
+    aria-describedby={messageId}
 >
-    <h2 id="dialog-title">{title}</h2>
-    <p id="dialog-message">{message}</p>
+    <h2 id={titleId}>{title}</h2>
+    <p id={messageId}>{message}</p>
     <div class="button-group">
         <button 
             type="button"

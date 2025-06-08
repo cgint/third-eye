@@ -22,9 +22,36 @@ let analysisHistoryStore: AnalysisHistoryStore | null = null;
 export const getAnalysisHistory = () => {
     if (!analysisHistoryStore) {
         // Initialize from localStorage if available
-        const initialValue: AnalysisEntry[] = browser
+        let initialValue: AnalysisEntry[] = browser
             ? JSON.parse(localStorage.getItem('analysisHistory') || '[]')
             : [];
+
+        // Validate and filter out corrupted entries
+        if (browser && initialValue.length > 0) {
+            const validEntries = initialValue.filter(entry => {
+                // Validate imageData format
+                if (Array.isArray(entry.imageData)) {
+                    // For comparison entries, validate each image in the array
+                    return entry.imageData.every(imageData => 
+                        typeof imageData === 'string' && 
+                        imageData.includes(',') && 
+                        imageData.startsWith('data:')
+                    );
+                } else {
+                    // For single entries, validate the imageData
+                    return typeof entry.imageData === 'string' && 
+                           entry.imageData.includes(',') && 
+                           entry.imageData.startsWith('data:');
+                }
+            });
+
+            // If we filtered out invalid entries, update localStorage
+            if (validEntries.length !== initialValue.length) {
+                console.log(`Filtered out ${initialValue.length - validEntries.length} corrupted analysis entries from localStorage`);
+                localStorage.setItem('analysisHistory', JSON.stringify(validEntries));
+                initialValue = validEntries;
+            }
+        }
 
         const { subscribe, set, update } = writable<AnalysisEntry[]>(initialValue);
 

@@ -26,10 +26,12 @@
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
             letter-spacing: 0.025em;
+            /* Improved contrast for accessibility */
+            background-color: #4338ca;
         }
 
         button:hover:not(:disabled) {
-            background-color: var(--primary-hover);
+            background-color: #3730a3;
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
         }
@@ -39,7 +41,8 @@
         }
 
         button:disabled {
-            background-color: #CBD5E1;
+            background-color: #94a3b8;
+            color: #64748b;
             cursor: not-allowed;
             box-shadow: none;
         }
@@ -71,6 +74,7 @@
         .header-image img {
             border-radius: 12px;
             height: 64px;
+            width: 64px;
         }
 
         .scenario-selection {
@@ -88,14 +92,23 @@
             background-color: white;
             min-width: 200px;
         }
+
+        .scenario-selection label {
+            font-weight: 600;
+            color: var(--text-color);
+        }
     </style>
 </svelte:head>
 
-<div class="header">
-    <div class="header-image header-image-left"><img src="/favicon_dall-e.png" alt="Third Eye" /></div>
-    <div class="header-image header-image-right"><img src="/favicon_dall-e.png" alt="Third Eye" /></div>
+<header class="header">
+    <div class="header-image header-image-left">
+        <img src="/favicon_dall-e.png" alt="Third Eye logo" width="64" height="64" />
+    </div>
+    <div class="header-image header-image-right">
+        <img src="/favicon_dall-e.png" alt="Third Eye logo" width="64" height="64" />
+    </div>
     <h1>Third Eye</h1>
-</div>
+</header>
 
 {#if !$cameraConsent}
     <Consent />
@@ -104,7 +117,8 @@
 {:else}
 
     <div class="scenario-selection">
-        <select bind:value={$selectedScenarioId}>
+        <label for="scenario-select">Choose scenario:</label>
+        <select id="scenario-select" bind:value={$selectedScenarioId}>
             {#each $scenarios as scenario}
                 <option value={scenario.id}>{scenario.name}</option>
             {/each}

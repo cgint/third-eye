@@ -66,7 +66,7 @@ Please answer the followup question using the above information.`;
     }
 
     async analyzeComparison(
-        entries: { imageData: string; analysisText: string; }[],
+        entries: { imageData: string | string[]; analysisText: string; }[],
         language: string,
         instructions: string
     ): Promise<AnalysisResult> {
@@ -81,10 +81,49 @@ Please answer the followup question using the above information.`;
             combinedPrompt += `Please compare the following products based on their images and provided previous analysis results. Provide a concise summary of key differences and similarities, especially focusing on nutritional information, allergens, and general healthiness if applicable. Ensure your answer is in ${this.getLanguagePrompt(language).replace('It is of highest importance for the user that you use the following language for your answer: ', '')}.\n\n`;
 
             entries.forEach((entry, index) => {
-                const mimeType = entry.imageData.split(',')[0].split(':')[1].split(';')[0]; // Extract mimeType from data URL
-                const data = entry.imageData.split(',')[1]; // Extract base64 data
-                parts.push({ text: `Product ${index + 1} (Image ${index + 1}):\nPrevious Analysis: ${entry.analysisText}\n\n` });
-                parts.push({ inlineData: { data: data, mimeType: mimeType } });
+                // Handle both single string and array of strings for imageData
+                const imageDataArray = Array.isArray(entry.imageData) ? entry.imageData : [entry.imageData];
+                
+                imageDataArray.forEach((imageData, imageIndex) => {
+                    // Enhanced validation with better error messages
+                    if (!imageData) {
+                        throw new Error(`Entry ${index + 1}, image ${imageIndex + 1}: imageData is null or undefined`);
+                    }
+                    
+                    if (typeof imageData !== 'string') {
+                        throw new Error(`Entry ${index + 1}, image ${imageIndex + 1}: imageData must be a string, got ${typeof imageData}`);
+                    }
+                    
+                    if (!imageData.includes(',')) {
+                        throw new Error(`Entry ${index + 1}, image ${imageIndex + 1}: imageData does not contain comma separator. Expected data URL format like 'data:image/jpeg;base64,<data>'. Got: ${imageData.substring(0, 100)}...`);
+                    }
+                    
+                    // Try to extract MIME type and data safely
+                    const imageParts = imageData.split(',');
+                    if (imageParts.length !== 2) {
+                        throw new Error(`Entry ${index + 1}, image ${imageIndex + 1}: imageData should have exactly one comma separator. Found ${imageParts.length - 1} commas`);
+                    }
+                    
+                    const dataPart = imageParts[0];
+                    const base64Data = imageParts[1];
+                    
+                    if (!dataPart.includes(':') || !dataPart.includes(';')) {
+                        throw new Error(`Entry ${index + 1}, image ${imageIndex + 1}: invalid data URL header format. Expected 'data:mime/type;base64' but got: ${dataPart}`);
+                    }
+                    
+                    if (!base64Data || base64Data.length === 0) {
+                        throw new Error(`Entry ${index + 1}, image ${imageIndex + 1}: base64 data part is empty`);
+                    }
+                    
+                    const mimeType = dataPart.split(':')[1].split(';')[0]; // Extract mimeType from data URL
+                    
+                    const imageLabel = imageDataArray.length > 1 
+                        ? `Product ${index + 1} (Image ${imageIndex + 1})` 
+                        : `Product ${index + 1}`;
+                    
+                    parts.push({ text: `${imageLabel}:\nPrevious Analysis: ${entry.analysisText}\n\n` });
+                    parts.push({ inlineData: { data: base64Data, mimeType: mimeType } });
+                });
             });
 
             // Prepend the main prompt as the first part

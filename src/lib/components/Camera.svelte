@@ -326,9 +326,11 @@
 <div class="top-section">
     <p>Take a photo for {scenarioName}</p>
     <div class="password-input">
-        Password: <input type="password" bind:value={$password} />
+        <label for="password-input">Password:</label>
+        <input type="password" id="password-input" bind:value={$password} />
         <button onclick={revokeConsent} title="Revoke camera access and local storage consent" style="width: 24px; height: 24px; padding: 0; font-size: 12px;">&#x26A0;</button>
-        Answer: <select bind:value={$language}>
+        <label for="language-select">Answer language:</label>
+        <select id="language-select" bind:value={$language}>
             <option value="en">English</option>
             <option value="de">Deutsch</option>
         </select>
@@ -348,8 +350,9 @@
 
     {#if isCustomScenario}
         <div class="custom-instructions">
-            <strong>Custom Instructions</strong>
+            <label for="custom-instructions-textarea"><strong>Custom Instructions</strong></label>
             <textarea
+                id="custom-instructions-textarea"
                 bind:value={$customInstructions}
                 placeholder="Enter your custom instructions for analyzing the image..."
                 rows="2"
@@ -463,20 +466,21 @@
                     <!-- Multiple images for comparison entries -->
                     <div class="comparison-images">
                         {#each entry.imageData as imageData, index}
-                            <img src={imageData} alt="Comparison image {index + 1}" class="comparison-img" />
+                            <img src={imageData} alt="Comparison image {index + 1}" class="comparison-img" width="160" height="120" />
                         {/each}
                     </div>
                 {:else}
                     <!-- Single image for regular entries -->
-                    <img src={entry.imageData} alt="This is the analyzed source" />
+                    <img src={entry.imageData} alt="This is the analyzed source" width="320" height="240" />
                 {/if}
             </div>
-            <h3>Analysis Results:</h3>
+            <h2>Analysis Results:</h2>
             <div class="result-entry-content">
                 {@html markedParseSimplify(entry.analysisText)}
                 <div class="followup-section">
                     <div class="followup-input">
-                        <input type="text" bind:value={followupQuestions[entry.timestamp]} placeholder="Enter followup question" 
+                        <label for="followup-{entry.timestamp}" class="sr-only">Follow-up question for analysis entry</label>
+                        <input type="text" id="followup-{entry.timestamp}" bind:value={followupQuestions[entry.timestamp]} placeholder="Enter followup question" 
                             onkeydown={(e) => {
                                 if (e.key === 'Enter') {
                                     handleFollowupForEntry(entry.timestamp);
@@ -666,11 +670,23 @@
     }
 
     .clear-history {
-        background-color: #ef4444;
+        background-color: #dc2626;
     }
 
     .clear-history:hover {
-        background-color: #dc2626;
+        background-color: #b91c1c;
+    }
+
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
     }
 
     .loading {
@@ -735,13 +751,13 @@
     }
 
     .delete-entry {
-        background-color: #ef4444;
+        background-color: #dc2626;
         padding: 4px 8px;
         font-size: 0.875rem;
     }
 
     .delete-entry:hover {
-        background-color: #dc2626;
+        background-color: #b91c1c;
     }
 
     .history-header {
