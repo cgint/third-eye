@@ -538,13 +538,7 @@
         padding-top: 8px;
     }
 
-    :root {
-        --primary-color: #6366F1;
-        --primary-hover: #4F46E5;
-        --background-color: #F8FAFC;
-        --text-color: #1F2937;
-        --border-color: #E2E8F0;
-    }
+
 
     p {
         color: #64748B;

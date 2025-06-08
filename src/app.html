@@ -6,6 +6,7 @@
 		
 		<!-- PWA Essential Meta Tags -->
 		<meta name="theme-color" content="#F8FAFC" />
+		<meta name="color-scheme" content="light" />
 		<meta name="mobile-web-app-capable" content="yes">
 		<meta name="mobile-web-app-status-bar-style" content="default" />
 		<meta name="apple-mobile-web-app-capable" content="yes">
@@ -60,6 +61,15 @@
 		</script>
 		
 		<style>
+			/* Global CSS Variables */
+			:root {
+				--primary-color: #6366F1;
+				--primary-hover: #4F46E5;
+				--background-color: #F8FAFC;
+				--text-color: #1F2937;
+				--border-color: #E2E8F0;
+			}
+			
 			/* Ensure full viewport usage */
 			html, body {
 				margin: 0;
@@ -102,11 +112,18 @@
 				touch-action: manipulation;
 			}
 			
-			/* PWA splash screen background */
+			/* PWA splash screen background and standalone mode fixes */
 			@media (display-mode: standalone) {
-				body {
-					background-color: var(--background-color);
+				html, body {
+					background-color: var(--background-color, #F8FAFC);
+					color: var(--text-color, #1F2937);
 				}
+			}
+			
+			/* Fallback for browsers that don't support CSS variables */
+			html {
+				background-color: #F8FAFC;
+				color: #1F2937;
 			}
 		</style>
 	</head>
