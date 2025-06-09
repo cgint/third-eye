@@ -395,7 +395,6 @@
         <label for="password-input">Password:</label>
         <input type="password" id="password-input" bind:value={$password} />
         <button onclick={revokeConsent} title="Revoke camera access and local storage consent" style="width: 24px; height: 24px; padding: 0; font-size: 12px;">&#x26A0;</button>
-        <label for="language-select">Answer language:</label>
         <select id="language-select" bind:value={$language}>
             <option value="en">English</option>
             <option value="de">Deutsch</option>
