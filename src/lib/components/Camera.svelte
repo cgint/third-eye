@@ -37,6 +37,11 @@
     let error: HTMLDivElement;
     let stream: MediaStream | null = null;
 
+    // Camera selection state
+    let availableCameras: MediaDeviceInfo[] = $state([]);
+    let selectedCameraId: string = $state('');
+    let isMobile: boolean = $state(false);
+
     let showDeleteHistoryConfirm = $state(false);
     let showDeleteEntryConfirm = $state(false);
     let entryToDelete: number | null = $state(null);
@@ -49,6 +54,7 @@
     });
 
     onMount(() => {
+        isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         initCamera();
         return () => {
             stopCamera();
@@ -65,15 +71,75 @@
         showRevokeConsentConfirm = false;
     }
 
+    async function enumerateCameras() {
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            availableCameras = devices.filter(device => device.kind === 'videoinput');
+            
+            // Auto-select preference: avoid OBS if Mac camera available, otherwise use first available
+            const macCamera = availableCameras.find(cam => 
+                cam.label.includes('FaceTime') || cam.label.includes('Built-in')
+            );
+            
+            if (!selectedCameraId) {
+                selectedCameraId = macCamera?.deviceId || availableCameras[0]?.deviceId || '';
+            }
+        } catch (err) {
+            console.error('Error enumerating cameras:', err);
+        }
+    }
+
+    async function switchCamera(newCameraId: string) {
+        try {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            
+            selectedCameraId = newCameraId;
+            await initCameraWithDevice();
+        } catch (err) {
+            console.error('Error switching camera:', err);
+            displayError('Error switching camera. Please try again.');
+        }
+    }
+
+    function toggleMobileCamera() {
+        if (availableCameras.length <= 1) return;
+        
+        const currentIndex = availableCameras.findIndex(cam => cam.deviceId === selectedCameraId);
+        const nextIndex = (currentIndex + 1) % availableCameras.length;
+        switchCamera(availableCameras[nextIndex].deviceId);
+    }
+
     async function initCamera() {
         try {
-            stream = await navigator.mediaDevices.getUserMedia({
+            // First enumerate cameras to get permissions and device list
+            await enumerateCameras();
+            await initCameraWithDevice();
+        } catch (err) {
+            console.error('Error initializing camera:', err);
+            displayError('Error accessing camera. Please ensure you have granted camera permissions.');
+            captureBtn.disabled = true;
+        }
+    }
+
+    async function initCameraWithDevice() {
+        try {
+            const constraints = selectedCameraId ? {
                 video: {
-                    facingMode: 'environment',
+                    deviceId: { exact: selectedCameraId },
                     width: { ideal: IMAGE_WIDTH },
                     height: { ideal: IMAGE_HEIGHT }
                 }
-            });
+            } : {
+                video: {
+                    facingMode: 'environment', // fallback
+                    width: { ideal: IMAGE_WIDTH },
+                    height: { ideal: IMAGE_HEIGHT }
+                }
+            };
+
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
             video.srcObject = stream;
             video.style.display = 'block';
             canvas.style.display = 'none';
@@ -346,6 +412,35 @@
             <track kind="captions" label="Camera feed captions" />
         </video>
         <canvas bind:this={canvas} id="canvas" aria-label="Captured photo"></canvas>
+        
+        <!-- Camera controls overlay -->
+        {#if availableCameras.length > 1}
+            {#if isMobile}
+                <button 
+                    class="camera-toggle-mobile"
+                    onclick={toggleMobileCamera}
+                    title="Switch camera"
+                    aria-label="Switch between front and back camera"
+                >
+                    🔄
+                </button>
+            {:else}
+                <div class="camera-selector-desktop">
+                    <select 
+                        bind:value={selectedCameraId}
+                        onchange={() => switchCamera(selectedCameraId)}
+                        title="Select camera source"
+                        aria-label="Select camera source"
+                    >
+                        {#each availableCameras as camera}
+                            <option value={camera.deviceId}>
+                                {camera.label || `Camera ${camera.deviceId.slice(0,8)}`}
+                            </option>
+                        {/each}
+                    </select>
+                </div>
+            {/if}
+        {/if}
     </div>
 
     {#if isCustomScenario}
@@ -815,5 +910,69 @@
         object-fit: contain;
         border: 1px solid #ccc;
         border-radius: 4px;
+    }
+
+    /* Camera selection controls */
+    .camera-toggle-mobile {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 20px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        backdrop-filter: blur(4px);
+        z-index: 10;
+    }
+
+    .camera-toggle-mobile:hover {
+        background: rgba(0, 0, 0, 0.8);
+        transform: scale(1.05);
+    }
+
+    .camera-selector-desktop {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        z-index: 10;
+    }
+
+    .camera-selector-desktop select {
+        font-size: 11px;
+        padding: 4px 6px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        backdrop-filter: blur(4px);
+        max-width: 140px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .camera-selector-desktop select:hover {
+        background: rgba(0, 0, 0, 0.8);
+    }
+
+    .camera-selector-desktop select option {
+        background: #333;
+        color: white;
+        padding: 4px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+        .camera-selector-desktop select {
+            max-width: 120px;
+            font-size: 10px;
+        }
     }
 </style>
