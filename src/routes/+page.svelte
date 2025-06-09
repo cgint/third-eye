@@ -89,14 +89,11 @@
             padding: 0.5rem;
             border: 1px solid var(--border-color);
             border-radius: 4px;
-            background-color: white;
+            background-color: #4338ca;
             min-width: 200px;
+            color: white;
         }
 
-        .scenario-selection label {
-            font-weight: 600;
-            color: var(--text-color);
-        }
     </style>
 </svelte:head>
 
@@ -117,7 +114,6 @@
 {:else}
 
     <div class="scenario-selection">
-        <label for="scenario-select">Choose scenario:</label>
         <select id="scenario-select" bind:value={$selectedScenarioId}>
             {#each $scenarios as scenario}
                 <option value={scenario.id}>{scenario.name}</option>
