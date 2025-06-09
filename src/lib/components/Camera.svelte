@@ -733,7 +733,7 @@
     }
 
     .result-entry img {
-        max-width: 480px;
+        max-width: 100%;
         max-height: 360px;
         width: auto;
         height: auto;
@@ -908,15 +908,16 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 8px;
-        max-width: 480px;
+        max-width: 100%;
         margin: 0 auto;
         justify-items: center;
+        width: 100%;
     }
 
     .comparison-img {
-        width: auto;
+        width: 100%;
         height: auto;
-        max-width: 230px;
+        max-width: 100%;
         max-height: 180px;
         object-fit: contain;
         border: 1px solid #ccc;
@@ -992,17 +993,16 @@
         }
         
         .result-entry img {
-            max-width: 95vw;
             max-height: 50vh;
         }
         
-        .comparison-images {
-            max-width: 95vw;
-        }
-        
         .comparison-img {
-            max-width: 45vw;
             max-height: 25vh;
+        }
+
+        .result-entry {
+            margin: 16px 8px;
+            padding: 16px;
         }
     }
 </style>
