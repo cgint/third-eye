@@ -561,12 +561,12 @@
                     <!-- Multiple images for comparison entries -->
                     <div class="comparison-images">
                         {#each entry.imageData as imageData, index}
-                            <img src={imageData} alt="Comparison image {index + 1}" class="comparison-img" width="160" height="120" />
+                            <img src={imageData} alt="Comparison image {index + 1}" class="comparison-img" />
                         {/each}
                     </div>
                 {:else}
                     <!-- Single image for regular entries -->
-                    <img src={entry.imageData} alt="This is the analyzed source" width="320" height="240" />
+                    <img src={entry.imageData} alt="This is the analyzed source" />
                 {/if}
             </div>
             <h2>Analysis Results:</h2>
@@ -660,8 +660,9 @@
     .camera-container {
         margin: 0px auto;
         position: relative;
-        width: 320px;
-        height: 240px;
+        width: 100%;
+        max-width: 480px;
+        max-height: 70vh;
         border: 2px solid var(--border-color);
         border-radius: 16px;
         overflow: hidden;
@@ -669,6 +670,9 @@
                     0 4px 8px -4px rgba(0, 0, 0, 0.03);
         background-color: white;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .camera-container:hover {
@@ -680,13 +684,13 @@
     #video {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
     }
 
     #canvas {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
         display: none;
     }
 
@@ -729,9 +733,13 @@
     }
 
     .result-entry img {
-        max-width: 320px;
+        max-width: 480px;
+        max-height: 360px;
+        width: auto;
+        height: auto;
         border: 1px solid #ccc;
         border-radius: 4px;
+        object-fit: contain;
     }
 
     .result-entry .timestamp {
@@ -872,6 +880,7 @@
         font-size: 0.666rem;
         color: #666;
         font-style: italic;
+        display: none;
     }
 
     .history-buttons {
@@ -899,14 +908,16 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 8px;
-        max-width: 320px;
+        max-width: 480px;
         margin: 0 auto;
+        justify-items: center;
     }
 
     .comparison-img {
-        width: 100%;
+        width: auto;
         height: auto;
-        max-height: 150px;
+        max-width: 230px;
+        max-height: 180px;
         object-fit: contain;
         border: 1px solid #ccc;
         border-radius: 4px;
@@ -973,6 +984,25 @@
         .camera-selector-desktop select {
             max-width: 120px;
             font-size: 10px;
+        }
+        
+        .camera-container {
+            max-width: 95vw;
+            max-height: 60vh;
+        }
+        
+        .result-entry img {
+            max-width: 95vw;
+            max-height: 50vh;
+        }
+        
+        .comparison-images {
+            max-width: 95vw;
+        }
+        
+        .comparison-img {
+            max-width: 45vw;
+            max-height: 25vh;
         }
     }
 </style>
