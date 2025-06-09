@@ -36,7 +36,7 @@ export class ImageAnalyzer {
         try {
             const prompt = `${instructions}
             
-            If appropriate also help with clarifying if the product name is in a different language or it might be unclear what the main ingredient or use/purpose of the product is.
+            If appropriate also help with clarifying if the object name is in a different language or it might be unclear what the main ingredient or use/purpose of the object is.
             `;
             return await this.analyzeThis(imageDataBase64, prompt, language);
         } catch (error) {
@@ -118,8 +118,8 @@ Please answer the followup question using the above information.`;
                     const mimeType = dataPart.split(':')[1].split(';')[0]; // Extract mimeType from data URL
                     
                     const imageLabel = imageDataArray.length > 1 
-                        ? `Product ${index + 1} (Image ${imageIndex + 1})` 
-                        : `Product ${index + 1}`;
+                        ? `Object ${index + 1} (Image ${imageIndex + 1})` 
+                        : `Object ${index + 1}`;
                     
                     parts.push({ text: `${imageLabel}:\nPrevious Analysis: ${entry.analysisText}\n\n` });
                     parts.push({ inlineData: { data: base64Data, mimeType: mimeType } });

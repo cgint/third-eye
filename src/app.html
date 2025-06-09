@@ -102,14 +102,15 @@
 				padding: 0;
 				height: 100%;
 				overflow-x: hidden;
+				overflow-y: auto;
 			}
 			
 			/* Ensure full viewport usage */
 			body {
 				margin: 0;
 				padding: 0;
-				height: 100%;
-				overflow-x: hidden;
+				min-height: 100%;
+				overflow: visible;
 				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 				padding-left: 8px;
 				padding-right: 8px;
@@ -117,7 +118,6 @@
 				background-color: #F8FAFC !important;
 				color: #1F2937 !important;
 				line-height: 1.6;
-				height: 100vh;
 				-webkit-text-size-adjust: 100%;
 				-ms-text-size-adjust: 100%;
 			}
