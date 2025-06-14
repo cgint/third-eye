@@ -76,13 +76,22 @@
             const devices = await navigator.mediaDevices.enumerateDevices();
             availableCameras = devices.filter(device => device.kind === 'videoinput');
             
-            // Auto-select preference: avoid OBS if Mac camera available, otherwise use first available
-            const macCamera = availableCameras.find(cam => 
-                cam.label.includes('FaceTime') || cam.label.includes('Built-in')
-            );
-            
             if (!selectedCameraId) {
-                selectedCameraId = macCamera?.deviceId || availableCameras[0]?.deviceId || '';
+                if (isMobile) {
+                    // On mobile, prefer environment (back) camera
+                    const environmentCamera = availableCameras.find(cam =>
+                        cam.label.toLowerCase().includes('back') || 
+                        cam.label.toLowerCase().includes('rear') || 
+                        cam.label.toLowerCase().includes('environment')
+                    );
+                    selectedCameraId = environmentCamera?.deviceId || availableCameras[0]?.deviceId || '';
+                } else {
+                    // On desktop, prefer built-in or first available (avoid OBS if Mac camera available)
+                    const macCamera = availableCameras.find(cam => 
+                        cam.label.includes('FaceTime') || cam.label.includes('Built-in')
+                    );
+                    selectedCameraId = macCamera?.deviceId || availableCameras[0]?.deviceId || '';
+                }
             }
         } catch (err) {
             console.error('Error enumerating cameras:', err);
