@@ -6,10 +6,19 @@ const mockAnalyze = vi.hoisted(() => vi.fn().mockResolvedValue({
 }));
 
 // Mock modules before any other imports
-vi.mock('$lib/services/imageAnalyzer', () => ({
-    ImageAnalyzer: vi.fn().mockImplementation(() => ({
-        analyze: mockAnalyze
-    }))
+vi.mock('$lib/services/imageAnalyzer', () => {
+    return {
+        ImageAnalyzer: class {
+            analyze = mockAnalyze;
+        }
+    };
+});
+
+vi.mock('$lib/logging/logFunctions', () => ({
+    logInfo: vi.fn(),
+    logError: vi.fn(),
+    logStackTrace: vi.fn(),
+    logMetric: vi.fn()
 }));
 
 vi.mock('$lib/constants', async () => {
