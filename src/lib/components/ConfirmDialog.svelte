@@ -4,9 +4,9 @@
     let dialog: HTMLDialogElement;
     
     // Create unique IDs to avoid ARIA duplicate ID issues
-    const dialogId = `dialog-${title.replace(/\s+/g, '-').toLowerCase()}`;
-    const titleId = `${dialogId}-title`;
-    const messageId = `${dialogId}-message`;
+    let dialogId = $derived(`dialog-${title.replace(/\s+/g, '-').toLowerCase()}`);
+    let titleId = $derived(`${dialogId}-title`);
+    let messageId = $derived(`${dialogId}-message`);
 
     $effect(() => {
         if (dialog) {
