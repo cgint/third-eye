@@ -3,7 +3,7 @@ pages_build_output_dir = ".svelte-kit/cloudflare"
 compatibility_date = "2025-01-01"
 
 [vars]
-VITE_GEMINI_MODEL_NAME = "gemini-2.0-flash-exp"
+VITE_GEMINI_MODEL_NAME = "gemini-3-flash-preview"
 VITE_IMAGE_HEIGHT = "1024"
 VITE_IMAGE_QUALITY_MAX = "0.9"
 VITE_IMAGE_WIDTH = "1024"
