@@ -4,7 +4,8 @@ import { RemoteRestLogger } from "./logging/RemoteRestLogger";
 export const APP_NAME = 'third-eye';
 
 export const GEMINI_API_KEY: string = import.meta.env.VITE_GEMINI_API_KEY;
-export const GEMINI_MODEL_NAME: string = import.meta.env.VITE_GEMINI_MODEL_NAME;
+// Default to the currently preferred model if not configured (helps local dev without a fully populated .env)
+export const GEMINI_MODEL_NAME: string = import.meta.env.VITE_GEMINI_MODEL_NAME || 'gemini-3.1-flash-lite-preview';
 export const TALK_PASSWORD: string = import.meta.env.VITE_TALK_PASSWORD;
 
 export const IMAGE_MIME_TYPE = import.meta.env.VITE_IMAGE_MIME_TYPE || 'image/webp';

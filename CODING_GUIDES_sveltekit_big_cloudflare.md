@@ -149,7 +149,7 @@ You can't use `fs` in Cloudflare Workers — you must [prerender](page-options#p
 ```
 VITE_GEMINI_API_KEY=${GEMINI_API_KEY}
 VITE_TALK_PASSWORD=set some password
-VITE_GEMINI_MODEL_NAME=gemini-2.0-flash-exp
+VITE_GEMINI_MODEL_NAME=gemini-3.1-flash-lite-preview
 VITE_REMOTE_LOGGER_BASE_URL=https://your-remote-logger-server.com
 VITE_REMOTE_LOGGER_PASSWORD=set some password
 ```

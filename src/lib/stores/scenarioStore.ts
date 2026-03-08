@@ -41,6 +41,19 @@ People should get a good idea of what the product is about and if it might be su
         displayInManageView: true
     },
     {
+        id: 'text-extraction',
+        name: 'Text Extraction (OCR)',
+        instructions: `Extract all readable text from this image.
+
+Output requirements:
+- Output ONLY the extracted text.
+- Preserve line breaks and reading order best-effort (top-to-bottom, left-to-right).
+- If a word is unclear, write [unclear] instead of guessing.
+- Do not add explanations, summaries, bullet points, tables, markdown formatting, or code fences.`,
+        isEditable: false,
+        displayInManageView: true
+    },
+    {
         id: 'custom',
         name: 'Custom Instructions',
         instructions: '',

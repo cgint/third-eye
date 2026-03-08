@@ -1,0 +1,30 @@
+direction: down
+
+User: {
+  shape: person
+}
+
+UI: {
+  label: "**Svelte UI**\nCamera + Scenario selection"
+}
+
+API: {
+  label: "**SvelteKit API**\nPOST /api/analyze"
+}
+
+Analyzer: {
+  label: "**ImageAnalyzer**\nBuild prompt + call Gemini"
+}
+
+Gemini: {
+  label: "**Gemini multimodal model**"
+}
+
+User -> UI: "Select 'Text Extraction (OCR)'\nTake photo"
+UI -> API: "base64Image + instructions\n(+ language)"
+API -> Analyzer: "analyze(image, language, instructions)"
+Analyzer -> Gemini: "instructions (OCR prompt)\n+ (existing language forcing)\n+ inline image"
+Gemini -> Analyzer: "response.text()"
+Analyzer -> API: "{ result_text }"
+API -> UI: "JSON"
+UI -> User: "Show + store in history"
