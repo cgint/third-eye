@@ -1,0 +1,39 @@
+direction: down
+
+Browser: {
+  label: "**Browser**"
+
+  LiveViewDOM: "LiveView-rendered UI\n(daisyUI/Tailwind)"
+
+  Hooks: {
+    label: "**JS Hooks**"
+    CameraHook: "CameraHook\ngetUserMedia + canvas capture"
+    LocalStateHook: "LocalStateHook\nlocalStorage hydrate/persist"
+  }
+
+  LocalStorage: "localStorage\n(consent, scenarios, history, prefs)"
+  PWA: "PWA assets\n(manifest + service worker + icons)"
+}
+
+Phoenix: {
+  label: "**Phoenix App (BEAM)**"
+
+  LiveViews: "LiveViews + Components\n(main + viewer + dialogs)"
+  Uploads: "LiveView Uploads\n(allow_upload + consume)"
+  GeminiClient: "Gemini client\n(Req + generateContent)"
+}
+
+GeminiAPI: "Google Gemini API\n(generateContent)"
+
+LocalStateHook <-> LocalStorage: "read/write"
+LocalStateHook <-> LiveViews: "hydrate + persist events"
+
+CameraHook -> Uploads: "binary image upload"
+Uploads -> LiveViews: "file ready"
+
+LiveViews -> GeminiClient: "prompt + inline_data"
+GeminiClient -> GeminiAPI
+GeminiAPI -> GeminiClient: "result_text"
+GeminiClient -> LiveViews
+
+LiveViews -> LiveViewDOM: "diff updates"

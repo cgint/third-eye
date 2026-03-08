@@ -1,0 +1,32 @@
+direction: down
+
+"**Dev & Deploy Flow (LiveView rewrite)**" {
+  "**Developer**" {
+    "Edit LiveView + hooks"
+    "mix phx.server (code reload)"
+  }
+
+  "**Build (CI/local)**" {
+    "mix deps.get"
+    "mix assets.deploy"
+    "mix release"
+    "Docker image"
+  }
+
+  "**w4y_services host**" {
+    "docker compose service"
+    "nginx reverse proxy"
+    "HTTPS/certs"
+  }
+
+  "**User device**" {
+    "HTTPS web app"
+    "manifest.json"
+    "minimal sw.js (no cache)"
+    "LiveView /live websocket"
+  }
+}
+
+"**Developer**" -> "**Build (CI/local)**": "push/build"
+"**Build (CI/local)**" -> "**w4y_services host**": "deploy image"
+"**w4y_services host**" -> "**User device**": "serve"

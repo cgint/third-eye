@@ -1,0 +1,27 @@
+direction: down
+
+"**PWA install-only + LiveView**" {
+  "**Browser**" {
+    "load /"
+    "read manifest.json"
+    "register sw.js"
+    "connect LiveView /live"
+    "Add to Home Screen"
+  }
+
+  "**Service Worker (minimal)**" {
+    "install: skipWaiting"
+    "activate: clients.claim"
+    "fetch: network passthrough"
+  }
+
+  "**Phoenix LiveView app**" {
+    "GET / (HTML)"
+    "GET /assets/*"
+    "WS /live"
+  }
+}
+
+"**Browser**" -> "**Service Worker (minimal)**": "install/activate"
+"**Browser**" -> "**Phoenix LiveView app**": "navigate + assets + WS"
+"**Service Worker (minimal)**" -> "**Phoenix LiveView app**": "fetch passthrough"

@@ -1,0 +1,66 @@
+direction: down
+
+User: {
+  label: "**User**\nUses Third Eye on phone/desktop"
+}
+
+Consent: {
+  label: "**Consent screen**\nGrant camera + local data consent"
+}
+
+Main: {
+  label: "**Main screen**\nScenario select + Camera + History"
+}
+
+ScenarioManager: {
+  label: "**Manage Scenarios**\nCreate / Edit / Delete"
+}
+
+Capture: {
+  label: "**Capture photo**\n(video → canvas)"
+}
+
+Analyze: {
+  label: "**Analyze (Gemini)**\nscenario instructions + language"
+}
+
+History: {
+  label: "**History list**\nlocal persistence (images + results)"
+}
+
+Viewer: {
+  label: "**Full-screen image viewer**\n/history/image/:timestamp[?i=]"
+}
+
+Followup: {
+  label: "**Follow-up Q&A**\nper history entry"
+}
+
+Compare: {
+  label: "**Compare entries**\nselect 2+ items"
+}
+
+ComparisonEntry: {
+  label: "**Comparison entry**\n(multi-image + result)"
+}
+
+User -> Consent: "first visit"
+Consent -> Main: "proceed"
+
+Main -> ScenarioManager: "Manage"
+ScenarioManager -> Main: "Close"
+
+Main -> Capture: "Take Photo"
+Capture -> Analyze: "send image"
+Analyze -> History: "append entry"
+
+History -> Viewer: "open image"
+Viewer -> History: "Back"
+
+History -> Followup: "Ask followup"
+Followup -> History: "append Q/A"
+
+History -> Compare: "Compare"
+Compare -> Analyze: "compare request"
+Analyze -> ComparisonEntry
+ComparisonEntry -> History: "append entry"

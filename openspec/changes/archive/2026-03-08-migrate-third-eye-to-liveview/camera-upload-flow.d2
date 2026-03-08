@@ -1,0 +1,41 @@
+direction: down
+
+"**Camera capture + LiveView upload (planned)**" {
+  "**User**" {
+    "Grant consent"
+    "Select/switch camera"
+    "Tap Capture"
+  }
+
+  "**Browser (JS Hook)**" {
+    "enumerateDevices()"
+    "getUserMedia() stream"
+    "video (playsInline, autoplay, muted)"
+    "draw frame to canvas"
+    "canvas.toBlob() -> File"
+    "hook.upload('photo', [File])"
+  }
+
+  "**LiveView Uploads**" {
+    "allow_upload(:photo)"
+    "chunked upload"
+    "tmp file writer"
+  }
+
+  "**Server (LiveView)**" {
+    "consume_uploaded_entries"
+    "read bytes"
+    "Gemini inline_data"
+    "assign result"
+  }
+
+  "**Client state**" {
+    "render result"
+    "persist history (localStorage hook)"
+  }
+}
+
+"**User**" -> "**Browser (JS Hook)**": "actions"
+"**Browser (JS Hook)**" -> "**LiveView Uploads**": "file upload"
+"**LiveView Uploads**" -> "**Server (LiveView)**": "tmp path + entry"
+"**Server (LiveView)**" -> "**Client state**": "LV diff"
