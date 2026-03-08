@@ -569,12 +569,26 @@
                     <!-- Multiple images for comparison entries -->
                     <div class="comparison-images">
                         {#each entry.imageData as imageData, index}
-                            <img src={imageData} alt="Comparison image {index + 1}" class="comparison-img" />
+                            <a
+                                class="history-image-link"
+                                href={`/history/image/${entry.timestamp}?i=${index}`}
+                                aria-label={`Open comparison image ${index + 1} full screen`}
+                                title="Open full-screen"
+                            >
+                                <img src={imageData} alt="Comparison image {index + 1}" class="comparison-img" />
+                            </a>
                         {/each}
                     </div>
                 {:else}
                     <!-- Single image for regular entries -->
-                    <img src={entry.imageData} alt="This is the analyzed source" />
+                    <a
+                        class="history-image-link"
+                        href={`/history/image/${entry.timestamp}`}
+                        aria-label="Open analyzed image full screen"
+                        title="Open full-screen"
+                    >
+                        <img src={entry.imageData} alt="This is the analyzed source" />
+                    </a>
                 {/if}
             </div>
             <h2>Analysis Results:</h2>
@@ -734,6 +748,22 @@
     .result-entry .result-entry-image {
         text-align: center;
         margin-bottom: 1rem;
+    }
+
+    .history-image-link {
+        display: inline-block;
+        text-decoration: none;
+        cursor: zoom-in;
+    }
+
+    .history-image-link:focus-visible {
+        outline: 2px solid #0ea5e9;
+        outline-offset: 4px;
+        border-radius: 6px;
+    }
+
+    .comparison-images .history-image-link {
+        width: 100%;
     }
 
     .result-entry .result-entry-content {
